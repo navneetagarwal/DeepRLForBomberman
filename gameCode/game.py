@@ -26,6 +26,7 @@ class Game:
 		self.highscores = highscore.Highscore()
 		self.forceQuit = False
 		self.mode = mode
+		self.initVar()
 
 		pygame.init()
 		self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
@@ -48,6 +49,16 @@ class Game:
 		if not self.forceQuit:
 			self.highscores.reloadScoreData()
 			self.highscores.displayScore()
+
+	def initVar(self):
+		self.players = []
+		self.enemies = []
+		self.bombs = []
+		self.resetTiles = []
+		self.stage = 1
+		self.level = 1
+		self.firstRun = True
+		self.exitGame = False
 
 	def joinGame(self):
 		self.client = TCPClient()
