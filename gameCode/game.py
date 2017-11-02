@@ -25,14 +25,16 @@ class Game:
 	userPrevScore = 0
 	userEvent = "continue"
 	epochs = 0
+	playerAlgo = "random"
 
-	def __init__(self, mode, epochs = 1):
+	def __init__(self, mode, playerAlgo = "random", epochs = 1):
 		self.epochs = epochs
+		self.playerAlgo = playerAlgo
+		self.c = config.Config()
 
 		for i in range(int(epochs)):
 			sys.stdout.write("Running epoch " + str(i) + "\n")
 
-			self.c = config.Config()
 			self.highscores = highscore.Highscore()
 			self.forceQuit = False
 			self.mode = mode
@@ -220,7 +222,7 @@ class Game:
 	
 	def initPlayers(self):
 		if self.mode == self.c.SINGLE:
-			self.user = player.Player("Player 1","p_1_",0,(40,40),"random")
+			self.user = player.Player("Player 1","p_1_",0,(40,40),self.playerAlgo)
 			self.players.append(self.user)
 			self.blit(self.user.image, self.user.position)
 		elif self.mode == self.c.MULTI:

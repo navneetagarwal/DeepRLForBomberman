@@ -14,11 +14,22 @@ class RandomAgent:
 	def observe(self, newState, reward, event):
 		pass
 
+class ReflexAgent:
+	def __init__(self):
+		pass
+
+	def getAction(self):
+		pass
+
+	def observe(self, newState, reward, event):
+		pass
+
 class Agent(object):
-	"""docstring for Agent"""
 	def __init__(self, algorithm):
 		if algorithm == "random":
 			self.agent = RandomAgent()
+		elif algorithm == "reflex":
+			self.agent = ReflexAgent()
 		
 	def get_action(self):
 		return self.agent.getAction()
