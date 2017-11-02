@@ -20,7 +20,7 @@ class Agent(object):
 		if algorithm == "random":
 			self.agent = RandomAgent()
 		
-	def get_action:
+	def get_action(self):
 		return self.agent.getAction()
 
 	def observe(self, newState, reward, event):

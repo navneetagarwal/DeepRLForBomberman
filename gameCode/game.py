@@ -1,5 +1,5 @@
 import sys, pygame, config, random, time
-import player, enemy, board, bomb, highscore, music
+import player, enemy, board, bomb, highscore, music, agent
 from pygame.locals import *
 import os,sys
 sys.path.append(os.path.split(sys.path[0])[0])
@@ -209,7 +209,7 @@ class Game:
 	
 	def initPlayers(self):
 		if self.mode == self.c.SINGLE:
-			self.user = player.Player("Player 1","p_1_",0,(40,40))
+			self.user = player.Player("Player 1","p_1_",0,(40,40),"random")
 			self.players.append(self.user)
 			self.blit(self.user.image, self.user.position)
 		elif self.mode == self.c.MULTI:
@@ -259,29 +259,59 @@ class Game:
 			if cyclicCounter%5 == 1:
 				self.clearExplosion()
 				
+			move = self.user.agent.get_action()
+			if move == "up":
+				self.user.getImage('up')
+				self.movementHelper(self.user, [0, -1*self.c.TILE_SIZE])
+				sys.stdout.write("UP\n")
+			elif move == "down":
+				self.user.getImage('down')
+				self.movementHelper(self.user, [0, 1*self.c.TILE_SIZE])
+				sys.stdout.write("DOWN\n")
+			elif move == "left":
+				self.user.getImage('left')
+				self.movementHelper(self.user, [-1*self.c.TILE_SIZE, 0])
+				sys.stdout.write("LEFT\n")
+			elif move == "right":
+				self.user.getImage('right')
+				self.movementHelper(self.user, [1*self.c.TILE_SIZE, 0])
+				sys.stdout.write("RIGHT\n")
+			elif move == "bomb":
+				self.deployBomb(self.user)
+				sys.stdout.write("BOMB\n")
+			elif move == "stay":
+				# Do nothing
+				sys.stdout.write("STAY\n")
+			else:
+				# ERROR
+				sys.stdout.write("-------GOT WRONG ACTION---------\n")
+
+			self.updateDisplayInfo()
+			pygame.display.update()
+
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					self.forceQuit()
-				elif event.type == pygame.KEYDOWN:
-					# deploy bomb
-					k = event.key
+				# elif event.type == pygame.KEYDOWN:
+				# 	# deploy bomb
+				# 	k = event.key
 
-					if k == pygame.K_SPACE:
-						if self.mode == self.c.MULTI:
-							self.sendingData = ["update","bomb",k,self.id]
-						self.deployBomb(self.user)
-					elif k == pygame.K_ESCAPE:
-						self.fQuit()
-					elif k == pygame.K_UP or k == pygame.K_DOWN or k == pygame.K_LEFT or k == pygame.K_RIGHT:
-						if self.mode == self.c.MULTI:
-							self.sendingData = ["update","movement",k,self.id]
+				# 	if k == pygame.K_SPACE:
+				# 		if self.mode == self.c.MULTI:
+				# 			self.sendingData = ["update","bomb",k,self.id]
+				# 		self.deployBomb(self.user)
+				# 	elif k == pygame.K_ESCAPE:
+				# 		self.fQuit()
+				# 	elif k == pygame.K_UP or k == pygame.K_DOWN or k == pygame.K_LEFT or k == pygame.K_RIGHT:
+				# 		if self.mode == self.c.MULTI:
+				# 			self.sendingData = ["update","movement",k,self.id]
 
-						# player's move method
-						point = self.user.movement(k) # next point
-						self.movementHelper(self.user, point)
-					elif k == pygame.K_g: # god mode, cheat ;)
-						self.user.gainPower(self.c.BOMB_UP)
-						self.user.gainPower(self.c.POWER_UP)
+				# 		# player's move method
+				# 		point = self.user.movement(k) # next point
+				# 		self.movementHelper(self.user, point)
+				# 	elif k == pygame.K_g: # god mode, cheat ;)
+				# 		self.user.gainPower(self.c.BOMB_UP)
+				# 		self.user.gainPower(self.c.POWER_UP)
 
 				elif event.type == pygame.USEREVENT: # RFCT - change definition
 					self.updateBombs()
@@ -291,6 +321,8 @@ class Game:
 
 				self.updateDisplayInfo()
 				pygame.display.update()
+
+
 	
 	def deployBomb(self,player):
 		b = player.deployBomb() # returns a bomb if available

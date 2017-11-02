@@ -1,4 +1,4 @@
-import pygame, character, config, bomb
+import pygame, character, config, bomb, agent
 
 # RFCT NEEDED
 class Player(character.Character):
@@ -9,11 +9,12 @@ class Player(character.Character):
 	power = 1			# bomb power
 	speed = 1			# player movement speed
 
-	def __init__(self, name, imageName, id, point):
+	def __init__(self, name, imageName, id, point, agentAlgo):
 		character.Character.__init__(self, name, "players/"+imageName, point)
 		self.c = config.Config()
 		self.id = id
 		self.instance_of = 'player'
+		self.agent = agent.Agent(agentAlgo)
 	
 	# reset all stats if death is true
 	def reset(self,death):
