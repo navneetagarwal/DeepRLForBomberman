@@ -2,7 +2,7 @@ import sys, pygame, config, game, highscore
 
 class Titlescreen():
 
-	def __init__(self):
+	def __init__(self, epochs):
 		self.c = config.Config()
 		exitMain = False
 
@@ -38,7 +38,7 @@ class Titlescreen():
 					elif event.type == pygame.MOUSEBUTTONDOWN:
 						if self.withinBoundary(25, 250, 500, 540):
 							userInteracted = True
-							self.singlePlayer() # Single Player game clicked
+							self.singlePlayer(epochs) # Single Player game clicked
 						elif self.withinBoundary(25, 250, 550, 600):
 							userInteracted = True
 							self.multiplayer() # Multiplayer game clicked
@@ -58,8 +58,8 @@ class Titlescreen():
 			return True
 		return False
 
-	def singlePlayer(self):
-		g = game.Game(self.c.SINGLE)
+	def singlePlayer(self, epochs):
+		g = game.Game(self.c.SINGLE, epochs)
 
 	def multiplayer(self):
 		g = game.Game(self.c.MULTI)

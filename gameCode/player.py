@@ -2,7 +2,7 @@ import pygame, character, config, bomb, agent
 
 # RFCT NEEDED
 class Player(character.Character):
-	lives = 3
+	lives = 1
 	score = 0
 	currentBomb = 1
 	maxBombs = 1

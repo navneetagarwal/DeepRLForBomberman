@@ -24,35 +24,41 @@ class Game:
 	# agent related data
 	userPrevScore = 0
 	userEvent = "continue"
+	epochs = 0
 
-	def __init__(self, mode):
-		self.c = config.Config()
-		self.highscores = highscore.Highscore()
-		self.forceQuit = False
-		self.mode = mode
-		self.initVar()
+	def __init__(self, mode, epochs = 1):
+		self.epochs = epochs
 
-		pygame.init()
-		self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
-		pygame.display.set_caption("Bomberman")
-		
-		# init preloader / join server
-		if self.mode == self.c.MULTI:
-			preloader = pygame.image.load(self.c.IMAGE_PATH + "loading.png").convert()
-			self.blit(preloader,(0,0))
-			pygame.display.flip()
-			self.joinGame()
-		
-		# repeat for multiple levels
-		while not self.exitGame: 
-			self.resetGame()
-			self.clearBackground()
-			self.initGame()
+		for i in range(int(epochs)):
+			sys.stdout.write("Running epoch " + str(i) + "\n")
 
-		# launch highscores
-		if not self.forceQuit:
-			self.highscores.reloadScoreData()
-			self.highscores.displayScore()
+			self.c = config.Config()
+			self.highscores = highscore.Highscore()
+			self.forceQuit = False
+			self.mode = mode
+			self.initVar()
+
+			pygame.init()
+			self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
+			pygame.display.set_caption("Bomberman")
+			
+			# init preloader / join server
+			if self.mode == self.c.MULTI:
+				preloader = pygame.image.load(self.c.IMAGE_PATH + "loading.png").convert()
+				self.blit(preloader,(0,0))
+				pygame.display.flip()
+				self.joinGame()
+			
+			# repeat for multiple levels
+			while not self.exitGame: 
+				self.resetGame()
+				self.clearBackground()
+				self.initGame()
+
+			# # launch highscores
+			# if not self.forceQuit:
+			# 	self.highscores.reloadScoreData()
+			# 	self.highscores.displayScore()
 
 	def initVar(self):
 		self.players = []

@@ -1,4 +1,5 @@
 import titlescreen, sys
 
 if __name__ == "__main__":	
-	t = titlescreen.Titlescreen()
+	epochs = sys.argv[1]
+	t = titlescreen.Titlescreen(epochs)
