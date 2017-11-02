@@ -373,7 +373,7 @@ class Game:
 				break
 			else:
 				# path which explosion can travel on
-				self.checkPlayerEnemyBombCollision(nPoint)
+				self.checkPlayerEnemyBombCollision(nPoint, bomb.position)
 
 				explosion = pygame.image.load(self.c.IMAGE_PATH + "explosion_c.png").convert()
 				self.blit(explosion,nPoint)
@@ -394,10 +394,10 @@ class Game:
 		player.reset(death)
 		self.blit(player.image,player.position)
 
-	def checkPlayerEnemyBombCollision(self, position):
+	def checkPlayerEnemyBombCollision(self, position, bomb_position):
 		# check if player was hit by bomb
 		for player in self.players:
-			if player.position == position:
+			if player.position == position or player.position == bomb_position:
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:
@@ -407,6 +407,7 @@ class Game:
 		# check if enemy was hit by bomb
 		for enemy in self.enemies:
 			if enemy.position == position:
+				# Add reward here 
 				self.enemies.remove(enemy)
 				self.user.setScore(100)
 
