@@ -21,6 +21,10 @@ class Game:
 	lastTcpCall = 0
 	pHash = {}
 
+	# agent related data
+	userPrevScore = 0
+	userEvent = "continue"
+
 	def __init__(self, mode):
 		self.c = config.Config()
 		self.highscores = highscore.Highscore()
@@ -59,6 +63,7 @@ class Game:
 		self.level = 1
 		self.firstRun = True
 		self.exitGame = False
+		self.userPrevScore = 0
 
 	def joinGame(self):
 		self.client = TCPClient()
@@ -173,8 +178,8 @@ class Game:
 			self.initEnemies()
 		
 		# music player
-		mp = music.Music()
-		mp.playMusic(self.mode)
+		# mp = music.Music()
+		# mp.playMusic(self.mode)
 
 		self.runGame()
 
@@ -258,7 +263,8 @@ class Game:
 
 			if cyclicCounter%5 == 1:
 				self.clearExplosion()
-				
+
+			# Get action from agent
 			move = self.user.agent.get_action()
 			if move == "up":
 				self.user.getImage('up')
@@ -322,8 +328,23 @@ class Game:
 				self.updateDisplayInfo()
 				pygame.display.update()
 
-
+			# Return observations and reward to agent
+			state = self.getObservableState()
+			reward = self.getReward()
+			event = self.getEvent()
+			self.user.agent.observe(state, reward, event)
 	
+	def getObservableState(self):
+		return self.field
+
+	def getReward(self):
+		reward = self.user.score - self.userPrevScore
+		self.userPrevScore = self.user.score
+		return reward
+
+	def getEvent(self):
+		return self.userEvent
+
 	def deployBomb(self,player):
 		b = player.deployBomb() # returns a bomb if available
 		if b != None:
@@ -441,6 +462,7 @@ class Game:
 		# check if player was hit by bomb
 		for player in self.players:
 			if player.position == position or player.position == bomb_position:
+				self.userEvent = "death"
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:
@@ -457,6 +479,7 @@ class Game:
 	def checkPlayerEnemyCollision(self):
 		for enemy in self.enemies:
 			if enemy.position == self.user.position:
+				self.userEvent = "death"
 				# RFCT - code repetition
 				if self.user.loseLifeAndGameOver():
 					self.gameover(self.user)
@@ -496,8 +519,8 @@ class Game:
 		if self.level > 6:
 			self.stage += 1
 			self.level = 1
-		mp = music.Music()
-		mp.playSound("victory")
+		# mp = music.Music()
+		# mp.playSound("victory")
 		time.sleep(2)
 
 	def updateTimer(self):

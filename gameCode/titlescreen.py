@@ -15,8 +15,8 @@ class Titlescreen():
 			img = pygame.image.load(imagePath).convert()
 			self.screen.blit(img,(0,0))
 
-			pygame.mixer.music.load(self.c.AUDIO_PATH + "title.mid")
-			pygame.mixer.music.play()
+			# pygame.mixer.music.load(self.c.AUDIO_PATH + "title.mid")
+			# pygame.mixer.music.play()
 
 			clock = pygame.time.Clock()
 			pygame.mouse.set_visible(True)
