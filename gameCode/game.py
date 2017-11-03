@@ -1,5 +1,5 @@
 import sys, pygame, config, random, time
-import player, enemy, board, bomb, highscore, music, agent
+import player, enemy, board, bomb, highscore, music, agent, observableState
 from pygame.locals import *
 import os,sys
 sys.path.append(os.path.split(sys.path[0])[0])
@@ -343,7 +343,15 @@ class Game:
 			self.user.agent.observe(state, reward, event)
 	
 	def getObservableState(self):
-		return self.field
+		enemyPositions = []
+		bombPositions = []
+		for enemy in self.enemies:
+			enemyPositions.append(enemy.position)
+		for bomb in self.bombs:
+			bombPositions.append(bomb.position)
+
+		newState = observableState.ObservableState(self.field, self.user.position, enemyPositions, bombPositions )
+		return newState
 
 	def getReward(self):
 		reward = self.user.score - self.userPrevScore

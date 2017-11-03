@@ -7,8 +7,7 @@ class RandomAgent:
 		self.step = 0
 
 	def getAction(self):
-		'''samples actions in a round-robin manner'''
-		self.step = (self.step + 1) % 6
+		self.step = random.randint(0, 5)
 		return 'up down left right bomb stay'.split()[self.step]
 
 	def observe(self, newState, reward, event):
