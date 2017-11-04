@@ -32,35 +32,32 @@ class Game:
 		self.playerAlgo = playerAlgo
 		self.c = config.Config()
 
-		for i in range(int(epochs)):
-			sys.stdout.write("Running epoch " + str(i) + "\n")
+		self.highscores = highscore.Highscore()
+		self.forceQuit = False
+		self.mode = mode
+		self.initVar()
 
-			self.highscores = highscore.Highscore()
-			self.forceQuit = False
-			self.mode = mode
-			self.initVar()
+		pygame.init()
+		self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
+		pygame.display.set_caption("Bomberman")
+		
+		# init preloader / join server
+		if self.mode == self.c.MULTI:
+			preloader = pygame.image.load(self.c.IMAGE_PATH + "loading.png").convert()
+			self.blit(preloader,(0,0))
+			pygame.display.flip()
+			self.joinGame()
+		
+		# repeat for multiple levels
+		while not self.exitGame: 
+			self.resetGame()
+			self.clearBackground()
+			self.initGame()
 
-			pygame.init()
-			self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
-			pygame.display.set_caption("Bomberman")
-			
-			# init preloader / join server
-			if self.mode == self.c.MULTI:
-				preloader = pygame.image.load(self.c.IMAGE_PATH + "loading.png").convert()
-				self.blit(preloader,(0,0))
-				pygame.display.flip()
-				self.joinGame()
-			
-			# repeat for multiple levels
-			while not self.exitGame: 
-				self.resetGame()
-				self.clearBackground()
-				self.initGame()
-
-			# # launch highscores
-			# if not self.forceQuit:
-			# 	self.highscores.reloadScoreData()
-			# 	self.highscores.displayScore()
+		# # launch highscores
+		# if not self.forceQuit:
+		# 	self.highscores.reloadScoreData()
+		# 	self.highscores.displayScore()
 
 	def initVar(self):
 		self.players = []
@@ -247,8 +244,8 @@ class Game:
 
 	def runGame(self):
 		clock = pygame.time.Clock()
-		pygame.time.set_timer(pygame.USEREVENT,1000)
-		pygame.time.set_timer(pygame.USEREVENT+1,500)
+		pygame.time.set_timer(pygame.USEREVENT,120)
+		pygame.time.set_timer(pygame.USEREVENT+1,60)
 		cyclicCounter = 0
 		self.gameIsActive = True
 
@@ -265,12 +262,14 @@ class Game:
 
 			# self.c.FPS is set to 30, 30 ticks = 1 second
 			cyclicCounter += 1
-			if cyclicCounter == self.c.FPS:
+			if cyclicCounter == 3:
 				cyclicCounter = 0
 				self.updateTimer()
 
-			if cyclicCounter%5 == 1:
+			if cyclicCounter%3 == 1:
 				self.clearExplosion()
+
+			self.updateBombs()
 
 			# Get action from agent
 			move = self.user.agent.get_action()
@@ -327,14 +326,14 @@ class Game:
 				# 		self.user.gainPower(self.c.BOMB_UP)
 				# 		self.user.gainPower(self.c.POWER_UP)
 
-				elif event.type == pygame.USEREVENT: # RFCT - change definition
-					self.updateBombs()
-				elif event.type == pygame.USEREVENT+1: #RFCT
-					for e in self.enemies:
-						self.movementHelper(e,e.nextMove())
+				# elif event.type == pygame.USEREVENT: # RFCT - change definition
+				# 	self.updateBombs()
+				# elif event.type == pygame.USEREVENT+1: #RFCT
+				# 	for e in self.enemies:
+				# 		self.movementHelper(e,e.nextMove())
 
-				self.updateDisplayInfo()
-				pygame.display.update()
+				# self.updateDisplayInfo()
+				# pygame.display.update()
 
 			# Return observations and reward to agent
 			state = self.getObservableState()
