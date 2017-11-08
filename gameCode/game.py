@@ -230,7 +230,7 @@ class Game:
 
 	def initEnemies(self):
 		# generates 5 enemies
-		for i in range(0,5):
+		for i in range(0,1):
 			while True:
 				x = random.randint(6,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
 				y = random.randint(6,self.field.height-2)*40
@@ -345,19 +345,22 @@ class Game:
 			reward = self.getReward()
 			event = self.getEvent()
 			self.user.agent.observe(state, reward, event)
+			self.user.agent.extract_features(state)
 	
 	def getObservableState(self):
-		enemyPositions = []
+		enemies = []
 		bombs = []
 		# Enemy Position
 		for enemy in self.enemies:
-			enemyPositions.append(enemy.position)
+			enemies.append(enemy)
+
+		
 		# Bombs	
 		for bomb in self.bombs:
 			bombs.append(bomb)
 
 
-		newState = observableState.ObservableState(self.field, self.user.position, enemyPositions, bombs)
+		newState = observableState.ObservableState(self.field, self.user.position, enemies, bombs)
 		return newState
 
 	def getReward(self):
