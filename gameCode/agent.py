@@ -97,7 +97,7 @@ class Agent(object):
 			self.agent = RandomAgent()
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
-		
+
 	def get_action(self):
 		return self.agent.getAction()
 

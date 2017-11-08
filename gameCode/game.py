@@ -299,6 +299,11 @@ class Game:
 				# ERROR
 				sys.stdout.write("-------GOT WRONG ACTION---------\n")
 
+			for e in self.enemies:
+				probToMove = random.random()
+				if(probToMove <= self.c.ENEMY_MOVE_PROB):	
+					self.movementHelper(e,e.nextMove())
+
 			self.updateDisplayInfo()
 			pygame.display.update()
 
@@ -329,8 +334,7 @@ class Game:
 				# elif event.type == pygame.USEREVENT: # RFCT - change definition
 				# 	self.updateBombs()
 				# elif event.type == pygame.USEREVENT+1: #RFCT
-				# 	for e in self.enemies:
-				# 		self.movementHelper(e,e.nextMove())
+				
 
 				# self.updateDisplayInfo()
 				# pygame.display.update()
