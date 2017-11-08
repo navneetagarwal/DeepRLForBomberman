@@ -54,7 +54,7 @@ class ReflexAgent:
 	def getAction(self):
 
 		if self.state != None:
-			bombPositions = self.state.bombPositions
+			bombs = self.state.bombs
 			userPosition = self.state.userPosition
 			enemyPositions = self.state.enemyPositions
 			board = self.state.board.board
@@ -64,7 +64,8 @@ class ReflexAgent:
 			y = userPosition[0]/self.config.TILE_SIZE
 
 			# Escape from bomb
-			for bombPos in bombPositions:
+			for bomb in bombs:
+				bombPos = bomb.position
 				print (userPosition[0], userPosition[1])
 				print (bombPos[0], bombPos[1])				
 				if bombPos[0] == userPosition[0]:	# Same x-coordinate -> Move left or right

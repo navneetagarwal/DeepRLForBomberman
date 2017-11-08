@@ -23,3 +23,10 @@ class Board:
 		col = int(point[0]/c.TILE_SIZE)
 		row = int(point[1]/c.TILE_SIZE)
 		return self.board[row][col]
+
+	def printBoard(self):
+		for row in range(self.height):
+			rowStr = ""
+			for col in range(self.width-1):
+				rowStr += str(self.board[row][col].type) + " "
+			print(rowStr)

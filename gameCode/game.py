@@ -254,6 +254,7 @@ class Game:
 			
 			self.checkPlayerEnemyCollision()
 			self.checkWinConditions()
+			self.field.printBoard()
 
 			# MULTIPLAYER
 			if self.mode == self.c.MULTI:
@@ -347,13 +348,16 @@ class Game:
 	
 	def getObservableState(self):
 		enemyPositions = []
-		bombPositions = []
+		bombs = []
+		# Enemy Position
 		for enemy in self.enemies:
 			enemyPositions.append(enemy.position)
+		# Bombs	
 		for bomb in self.bombs:
-			bombPositions.append(bomb.position)
+			bombs.append(bomb)
 
-		newState = observableState.ObservableState(self.field, self.user.position, enemyPositions, bombPositions )
+
+		newState = observableState.ObservableState(self.field, self.user.position, enemyPositions, bombs)
 		return newState
 
 	def getReward(self):
