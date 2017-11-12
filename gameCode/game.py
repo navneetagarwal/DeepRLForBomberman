@@ -449,7 +449,7 @@ class Game:
 
 			nPoint = bomb.position.move((x,y))
 			t = self.field.getTile(nPoint)
-
+			
 			# hit a block or indestructible object
 			if not t.canBombPass():
 				# trigger new bomb explosion
