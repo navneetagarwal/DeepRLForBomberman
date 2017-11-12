@@ -107,6 +107,7 @@ class DeepQAgent:
 		self.gamma = 0.9
 		self.net = network(self.gamma)
 		# Start tf session
+		self.config = config.Config()
 		self.net._startSess()
 
 	def setState(self, state):
@@ -114,14 +115,14 @@ class DeepQAgent:
 
 		# TODO - Remove
 		# For just testing
-		self.state = [[1.0, 2.0, 3.0, 4.0]]
+		self.state = self.extract_features(state)
 
 	def getAction(self):
 		# self.net.findQ(self.state)
 
 		# TODO - Remove
 		# For just testing		
-		Q = self.net.findQ([[1.0, 2.0, 3.0, 4.0]])
+		Q = self.net.findQ(self.state)
 		# a = np.argmax(Q)
 		a = random.randint(0, 5)
 		self.action = a
@@ -130,32 +131,21 @@ class DeepQAgent:
 	def observe(self, newState, reward, event):
 		# TODO - Remove
 		# For just testing		
-		newState = [[1.0, 12.0, -3.0, 4.0]]
+		newState = self.extract_features(newState)
 		self.net.trainNetwork(self.state, self.action, reward, newState)
 		self.state = newState
-
-class Agent(object):
-	def __init__(self, algorithm):
-		if algorithm == "random":
-			self.agent = RandomAgent()
-		elif algorithm == "reflex":
-			self.agent = ReflexAgent()
-		elif algorithm == "DeepQ":
-			self.agent = DeepQAgent() 
-		self.config = config.Config()
-
 	def get_children_start(self, parent, y_length, x_length):
 		x = parent[0]
 		y = parent[1]
 		children = []
 		if(x + 40 <= x_length*40):
-			children.append((x + 40, y, "right"))
+			children.append((x + 40, y, 0))
 		if(x - 40 >= 40):
-			children.append((x - 40, y, "left"))
+			children.append((x - 40, y, 1))
 		if(y + 40 <= y_length * 40):
-			children.append((x, y + 40, "down"))
+			children.append((x, y + 40, 2))
 		if(y - 40 >= 40):
-			children.append((x, y - 40, "up"))
+			children.append((x, y - 40, 3))
 		return children
 
 	def get_children(self, parent, y_length, x_length, direction):
@@ -183,7 +173,7 @@ class Agent(object):
 		# Visited Set
 		explored = []
 		queue = deque()
-		queue.append(((userPosition[0], userPosition[1]), 0, "NONE"))
+		queue.append(((userPosition[0], userPosition[1]), 0, -1))
 		explored.append((userPosition[0], userPosition[1]))
 		start = 1
 		while queue:
@@ -200,7 +190,7 @@ class Agent(object):
 				if (child[0], child[1]) not in explored and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					queue.append(((child[0], child[1]), node[1]+1, child[2]))
 					explored.append((child[0], child[1]))
-		return -1, "NONE"
+		return -1, -1
 
 	def shortest_distance_adversary(self, userPosition, board, adversary, bombs, enemies):
 		H = board.height
@@ -215,7 +205,7 @@ class Agent(object):
 		positions_enemies = [(position[0], position[1]) for position in positions_enemies]
 		queue = deque()
 		# Position Tuple, Depth, Direction
-		queue.append(((userPosition[0], userPosition[1]), 0, "NONE"))
+		queue.append(((userPosition[0], userPosition[1]), 0, -1))
 		# Positions
 		explored.append((userPosition[0], userPosition[1]))
 		start = 1
@@ -234,7 +224,7 @@ class Agent(object):
 				if (child[0], child[1]) not in explored and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					queue.append(((child[0], child[1]), node[1]+1, child[2]))
 					explored.append((child[0], child[1]))
-		return -1, "NONE"
+		return -1, -1
 
 	def degree(self, userPosition, board, bombs, enemies, direction, depth):
 		print userPosition[0], userPosition[1]
@@ -275,7 +265,7 @@ class Agent(object):
 
 		nPoint = userPosition.move((point[0], point[1]))
 		t = board.getTile(nPoint)
-		if not t.canBombPass():
+		if not t.canBombPass() or (nPoint[0], nPoint[1]) in positions_enemies:
 			return 0
 		nPoint = (nPoint[0], nPoint[1])
 		explored.append((userPosition[0], userPosition[1]))
@@ -324,24 +314,48 @@ class Agent(object):
 
 
 	def extract_features(self, state):
+		features = []
 		# Get distance to nearest brick
 		distance_from_brick, direction_from_brick = self.shortest_distance(state.userPosition, self.config.BRICK, state.board, state.bombs, state.enemies)
+		features.append(distance_from_brick)
+		features.append(direction_from_brick)
 		# Get distance to nearest powerup_bomb
 		distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board, state.bombs, state.enemies)
+		features.append(distance_from_bomb_up)
+		features.append(direction_from_bomb_up)
 		# Get distance to nearest power_up
 		distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board, state.bombs, state.enemies)
+		features.append(distance_from_power_up)
+		features.append(direction_from_power_up)
 		# Get distance to nearest enemy
 		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
+		features.append(distance_from_enemy)
+		features.append(direction_from_enemy)
 		# Get distance to nearest bomb
 		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
+		features.append(distance_from_bomb)
+		features.append(direction_from_bomb)
 		# If the bomberman is in range of a bomb
 		in_danger = self.in_range(state.userPosition, state.board, state.bombs)
+		features.append(in_danger)
 		# Check for degree of freedom i.e. if a n length path exists from here
 		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "up", 3)
+		features.append(degree_of_freedom)
 
+		return [features]		
 
+class Agent(object):
+	def __init__(self, algorithm):
+		if algorithm == "random":
+			self.agent = RandomAgent()
+		elif algorithm == "reflex":
+			self.agent = ReflexAgent()
+		elif algorithm == "DeepQ":
+			self.agent = DeepQAgent() 
 
-		print distance_from_brick, direction_from_brick, in_danger, degree_of_freedom
+	
+	def extract_features(self, state):
+		return self.agent.extract_features(state)
 
 	def setState(self, state):
 		self.agent.setState(state)
