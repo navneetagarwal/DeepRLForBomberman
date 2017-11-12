@@ -2,10 +2,15 @@ from collections import deque
 import random, sys, math, copy
 import observableState
 import config
+from network import network
+import numpy as np
 
 class RandomAgent:
 	def __init__(self):
 		self.step = 0
+
+	def setState(self, state):
+		self.state = state
 
 	def getAction(self):
 		self.step = random.randint(0, 5)
@@ -18,6 +23,9 @@ class ReflexAgent:
 	def __init__(self):
 		self.state = None
 		self.config = config.Config()
+
+	def setState(self, state):
+		self.state = state
 
 	def canMove(self, position, board, direction):
 		y = position[1]/self.config.TILE_SIZE
@@ -94,12 +102,45 @@ class ReflexAgent:
 	def observe(self, newState, reward, event):
 		self.state = newState
 
+class DeepQAgent:
+	def __init__(self):
+		self.gamma = 0.9
+		self.net = network(self.gamma)
+		# Start tf session
+		self.net._startSess()
+
+	def setState(self, state):
+		# self.state = state
+
+		# TODO - Remove
+		# For just testing
+		self.state = [[1.0, 2.0, 3.0, 4.0]]
+
+	def getAction(self):
+		# self.net.findQ(self.state)
+
+		# TODO - Remove
+		# For just testing		
+		Q = self.net.findQ([[1.0, 2.0, 3.0, 4.0]])
+		a = np.argmax(Q)
+		self.action = a
+		return 'up down left right bomb stay'.split()[a]
+
+	def observe(self, newState, reward, event):
+		# TODO - Remove
+		# For just testing		
+		newState = [[1.0, 12.0, -3.0, 4.0]]
+		self.net.trainNetwork(self.state, self.action, reward, newState)
+		self.state = newState
+
 class Agent(object):
 	def __init__(self, algorithm):
 		if algorithm == "random":
 			self.agent = RandomAgent()
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
+		elif algorithm == "DeepQ":
+			self.agent = DeepQAgent() 
 		self.config = config.Config()
 
 	def get_children_start(self, parent, y_length, x_length):
@@ -301,6 +342,8 @@ class Agent(object):
 
 		print distance_from_brick, direction_from_brick, in_danger, degree_of_freedom
 
+	def setState(self, state):
+		self.agent.setState(state)
 
 	def get_action(self):
 		return self.agent.getAction()

@@ -243,6 +243,9 @@ class Game:
 			self.blit(e.image, e.position)
 
 	def runGame(self):
+		# Set the start state
+		self.user.agent.setState(self.getObservableState())
+
 		clock = pygame.time.Clock()
 		pygame.time.set_timer(pygame.USEREVENT,120)
 		pygame.time.set_timer(pygame.USEREVENT+1,60)

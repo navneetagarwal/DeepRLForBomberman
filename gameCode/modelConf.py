@@ -1,7 +1,7 @@
 class modelConf:
 	def __init__(self):
 		self.numLayers 		= 3
-		self.numInputs		= 20
+		self.numInputs		= 4
 		self.numOutputs		= 6
 		self.outputs 		= [10, 10, 6]
 		self.activations 	= ['relu', 'relu', 'softmax']
