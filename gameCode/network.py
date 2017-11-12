@@ -14,7 +14,7 @@ class network:
 
 		# Gamma for RL in the agent
 		self.gamma = gamma
-
+		tf.reset_default_graph()
 		#These lines establish the feed-forward part of the network used to choose actions
 		layers = []
 		self.inp = tf.placeholder(shape=[1,self.inputDim], dtype=tf.float32)
@@ -44,7 +44,7 @@ class network:
 
 	def _startSess(self):
 		self.sess = tf.Session()
-		self.sess.run(tf.initialize_all_variables())
+		self.sess.run(tf.global_variables_initializer())
 
 	def findQ(self, state):
 		return(self.sess.run(self.Q, feed_dict={self.inp: state}))

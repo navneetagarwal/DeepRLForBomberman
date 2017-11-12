@@ -122,7 +122,8 @@ class DeepQAgent:
 		# TODO - Remove
 		# For just testing		
 		Q = self.net.findQ([[1.0, 2.0, 3.0, 4.0]])
-		a = np.argmax(Q)
+		# a = np.argmax(Q)
+		a = random.randint(0, 5)
 		self.action = a
 		return 'up down left right bomb stay'.split()[a]
 
