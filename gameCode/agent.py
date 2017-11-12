@@ -357,13 +357,13 @@ class DeepQAgent:
 		return [features]		
 
 class Agent(object):
-	def __init__(self, algorithm):
+	def __init__(self, algorithm, isLoad):
 		if algorithm == "random":
 			self.agent = RandomAgent()
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
 		elif algorithm == "DeepQ":
-			self.agent = DeepQAgent() 
+			self.agent = DeepQAgent(isLoad) 
 
 	
 	def extract_features(self, state):

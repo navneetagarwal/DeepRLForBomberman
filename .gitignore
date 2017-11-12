@@ -1,2 +1,3 @@
 *.pyc
 gameCode/resources/highscores.txt
+models/**

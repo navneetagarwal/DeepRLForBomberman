@@ -54,10 +54,9 @@ class Game:
 
 		for i in range(self.epochs):
 			# repeat for multiple levels
-			while not self.exitGame: 
-				self.resetGame()
-				self.clearBackground()
-				self.initGame()
+			self.resetGame()
+			self.clearBackground()
+			self.initGame()
 		
 		if isSave:
 			self.agent.saveModel()
