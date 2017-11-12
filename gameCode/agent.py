@@ -1,5 +1,5 @@
 from collections import deque
-import random, sys, math
+import random, sys, math, copy
 import observableState
 import config
 
@@ -107,13 +107,13 @@ class Agent(object):
 		y = parent[1]
 		children = []
 		if(x + 40 <= x_length*40):
-			children.append((x + 40, y, "RIGHT"))
+			children.append((x + 40, y, "right"))
 		if(x - 40 >= 40):
-			children.append((x - 40, y, "LEFT"))
+			children.append((x - 40, y, "left"))
 		if(y + 40 <= y_length * 40):
-			children.append((x, y + 40, "UP"))
+			children.append((x, y + 40, "down"))
 		if(y - 40 >= 40):
-			children.append((x, y - 40, "DOWN"))
+			children.append((x, y - 40, "up"))
 		return children
 
 	def get_children(self, parent, y_length, x_length, direction):
@@ -130,10 +130,14 @@ class Agent(object):
 			children.append((x, y - 40, direction))
 		return children
 
-	def shortest_distance(self, userPosition, type_req, board):
+	def shortest_distance(self, userPosition, type_req, board, bombs, enemies):
 		H = board.height
 		W = board.width
 		board = board.board
+		positions_bombs = [position.position for position in bombs]
+		positions_bombs = [(position[0], position[1]) for position in positions_bombs]
+		positions_enemies = [position.position for position in enemies]
+		positions_enemies = [(position[0], position[1]) for position in positions_enemies]
 		# Visited Set
 		explored = []
 		queue = deque()
@@ -151,18 +155,22 @@ class Agent(object):
 				if(board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == type_req):
 					return node[1]+1, child[2]
 			for child in children:
-				if (child[0], child[1]) not in explored and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
+				if (child[0], child[1]) not in explored and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					queue.append(((child[0], child[1]), node[1]+1, child[2]))
 					explored.append((child[0], child[1]))
 		return -1, "NONE"
 
-	def shortest_distance_adversary(self, userPosition, board, adversary):
+	def shortest_distance_adversary(self, userPosition, board, adversary, bombs, enemies):
 		H = board.height
 		W = board.width
 		board = board.board
 		explored = []
 		positions = [position.position for position in adversary]
 		positions = [(position[0], position[1]) for position in positions]
+		positions_bombs = [position.position for position in bombs]
+		positions_bombs = [(position[0], position[1]) for position in positions_bombs]
+		positions_enemies = [position.position for position in enemies]
+		positions_enemies = [(position[0], position[1]) for position in positions_enemies]
 		queue = deque()
 		# Position Tuple, Depth, Direction
 		queue.append(((userPosition[0], userPosition[1]), 0, "NONE"))
@@ -172,18 +180,66 @@ class Agent(object):
 		while queue:
 			node = queue.popleft()
 			# If enemy is found
-			if node[0] in positions:
-				return node[1], node[2]
 			if start == 1:
 				children = self.get_children_start(node[0], H, W)
 				start = 2
 			else:
 				children = self.get_children(node[0], H, W, node[2])
 			for child in children:
-				if (child[0], child[1]) not in explored and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
+				if (child[0], child[1]) in positions:
+					return node[1]+1, child[2]
+			for child in children:
+				if (child[0], child[1]) not in explored and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					queue.append(((child[0], child[1]), node[1]+1, child[2]))
 					explored.append((child[0], child[1]))
 		return -1, "NONE"
+
+	def degree(self, userPosition, board, bombs, enemies, direction, depth):
+		print userPosition[0], userPosition[1]
+		H = board.height
+		W = board.width
+		board1 = board.board
+		point = (0, 0)
+		if direction == 'right':
+			point = (40,0)
+		elif direction == 'left':
+			point = (-40,0)
+		elif direction == 'up':
+			point = (0,-40)
+		elif direction == 'down':
+			point = (0,40)
+		explored = []
+		positions_bombs = [position.position for position in bombs]
+		positions_bombs = [(position[0], position[1]) for position in positions_bombs]
+		positions_enemies = [position.position for position in enemies]
+		positions_enemies = [(position[0], position[1]) for position in positions_enemies]
+		# DFS over all the paths
+		def dfs(node, vector, depth):
+			if node in vector or node in positions_bombs or node in positions_enemies:
+				return 0
+			if depth <= 0:
+				return 1
+			children = self.get_children_start(node, H, W)
+			vector.append((node[0], node[1]))
+			ans = 0
+			for child in children:
+				if child not in vector and child not in positions_bombs and child not in positions_enemies and board1[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
+					ans += dfs(child, vector, depth-1)
+			vector.pop()
+			if ans > 0:
+				return 1
+			else:
+				return 0
+
+		nPoint = userPosition.move((point[0], point[1]))
+		t = board.getTile(nPoint)
+		if not t.canBombPass():
+			return 0
+		nPoint = (nPoint[0], nPoint[1])
+		explored.append((userPosition[0], userPosition[1]))
+		val = dfs(nPoint, copy.deepcopy(explored), depth-1)
+		return val
+
 
 	def explosiveHelper(self, userPosition, bomb, board, direction):
 		if direction == 'right':
@@ -224,21 +280,26 @@ class Agent(object):
 		return 0
 
 
+
 	def extract_features(self, state):
 		# Get distance to nearest brick
-		distance_from_brick, direction_from_brick = self.shortest_distance(state.userPosition, self.config.BRICK, state.board)
-		# # Get distance to nearest powerup_bomb
-		distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board)
-		# # Get distance to nearest power_up
-		distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board)
-		# # Get distance to nearest enemy
-		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies)
-		# # Get distance to nearest bomb
-		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs)
-
+		distance_from_brick, direction_from_brick = self.shortest_distance(state.userPosition, self.config.BRICK, state.board, state.bombs, state.enemies)
+		# Get distance to nearest powerup_bomb
+		distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board, state.bombs, state.enemies)
+		# Get distance to nearest power_up
+		distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board, state.bombs, state.enemies)
+		# Get distance to nearest enemy
+		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
+		# Get distance to nearest bomb
+		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
+		# If the bomberman is in range of a bomb
 		in_danger = self.in_range(state.userPosition, state.board, state.bombs)
+		# Check for degree of freedom i.e. if a n length path exists from here
+		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "up", 3)
 
-		print distance_from_brick, direction_from_brick, in_danger
+
+
+		print distance_from_brick, direction_from_brick, in_danger, degree_of_freedom
 
 
 	def get_action(self):
