@@ -103,12 +103,14 @@ class ReflexAgent:
 		self.state = newState
 
 class DeepQAgent:
-	def __init__(self):
+	def __init__(self, isLoad):
 		self.gamma = 0.9
+		self.eps = 0.2
 		self.net = network(self.gamma)
 		# Start tf session
 		self.config = config.Config()
-		self.net._startSess()
+		self.net._startSess(isLoad)
+
 
 	def setState(self, state):
 		# self.state = state
@@ -117,14 +119,21 @@ class DeepQAgent:
 		# For just testing
 		self.state = self.extract_features(state)
 
+	def saveModel(self):
+		self.net.saveNetwork()
+
 	def getAction(self):
 		# self.net.findQ(self.state)
 
 		# TODO - Remove
 		# For just testing		
-		Q = self.net.findQ(self.state)
-		# a = np.argmax(Q)
-		a = random.randint(0, 5)
+
+		epsRand = random.random()
+		if(epsRand <= self.eps):
+			a = random.randint(0, 5)
+		else:
+			Q = self.net.findQ(self.state)
+			a = np.argmax(Q)
 		self.action = a
 		return 'up down left right bomb stay'.split()[a]
 
@@ -134,6 +143,8 @@ class DeepQAgent:
 		newState = self.extract_features(newState)
 		self.net.trainNetwork(self.state, self.action, reward, newState)
 		self.state = newState
+
+
 	def get_children_start(self, parent, y_length, x_length):
 		x = parent[0]
 		y = parent[1]
@@ -151,6 +162,7 @@ class DeepQAgent:
 	def get_children(self, parent, y_length, x_length, direction):
 		x = parent[0]
 		y = parent[1]
+
 		children = []
 		if(x + 40 <= x_length*40):
 			children.append((x + 40, y, direction))
@@ -356,6 +368,9 @@ class Agent(object):
 	
 	def extract_features(self, state):
 		return self.agent.extract_features(state)
+
+	def saveModel(self):
+		self.agent.saveModel()
 
 	def setState(self, state):
 		self.agent.setState(state)

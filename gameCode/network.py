@@ -4,6 +4,7 @@
 from modelConf import modelConf
 import tensorflow as tf
 import numpy as np
+import os
 
 class network:
 	def __init__(self, gamma):
@@ -42,9 +43,14 @@ class network:
 		trainer = tf.train.GradientDescentOptimizer(learning_rate=self.conf.lr)
 		self.backProp = trainer.minimize(self.loss)
 
-	def _startSess(self):
+	def _startSess(self, loadModel):
 		self.sess = tf.Session()
-		self.sess.run(tf.global_variables_initializer())
+
+		if not loadModel:
+			self.sess.run(tf.global_variables_initializer())
+		else:
+			saver = tf.train.Saver()
+			saver.restore(self.sess, "../models/model.ckpt")
 
 	def findQ(self, state):
 		return(self.sess.run(self.Q, feed_dict={self.inp: state}))
@@ -60,6 +66,12 @@ class network:
 		optimalQ[0,action] = updatedVal
 		loss,_ = self.sess.run([self.loss, self.backProp], feed_dict={self.inp: state, self.optimalQ: optimalQ})
 		return loss
+
+	def saveNetwork(self):
+		os.mkdir('../models', 0775)
+		saver = tf.train.Saver()
+		save_path = saver.save(self.sess, "../models/model.ckpt")
+  		print("Model saved in file: %s" % save_path)
 
 
 

@@ -27,9 +27,13 @@ class Game:
 	epochs = 0
 	playerAlgo = "random"
 
-	def __init__(self, mode, playerAlgo = "random", epochs = 1):
+	def __init__(self, mode, playerAlgo = "random", epochs = 1, isLoad=0, isSave=0):
 		self.epochs = epochs
 		self.playerAlgo = playerAlgo
+		self.isLoad = isLoad
+		self.isSave = isSave
+		self.agent = agent.Agent(playerAlgo, isLoad)
+
 		self.c = config.Config()
 
 		self.highscores = highscore.Highscore()
@@ -47,12 +51,16 @@ class Game:
 			self.blit(preloader,(0,0))
 			pygame.display.flip()
 			self.joinGame()
+
+		for i in range(self.epochs):
+			# repeat for multiple levels
+			while not self.exitGame: 
+				self.resetGame()
+				self.clearBackground()
+				self.initGame()
 		
-		# repeat for multiple levels
-		while not self.exitGame: 
-			self.resetGame()
-			self.clearBackground()
-			self.initGame()
+		if isSave:
+			self.agent.saveModel()
 
 		# # launch highscores
 		# if not self.forceQuit:
@@ -219,7 +227,7 @@ class Game:
 	
 	def initPlayers(self):
 		if self.mode == self.c.SINGLE:
-			self.user = player.Player("Player 1","p_1_",0,(40,40),self.playerAlgo)
+			self.user = player.Player("Player 1","p_1_",0,(40,40),self.agent)
 			self.players.append(self.user)
 			self.blit(self.user.image, self.user.position)
 		elif self.mode == self.c.MULTI:
@@ -230,7 +238,7 @@ class Game:
 
 	def initEnemies(self):
 		# generates 5 enemies
-		for i in range(0,1):
+		for i in range(0,5):
 			while True:
 				x = random.randint(6,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
 				y = random.randint(6,self.field.height-2)*40
@@ -525,7 +533,9 @@ class Game:
 			print 'gameover - lost all lives | or time ran out'
 			self.highscores.addScore(player.score)
 			self.gameIsActive = False
-			self.exitGame = True
+			
+			# DONT EXIT GAME
+			# self.exitGame = True
 	
 	def fQuit(self):
 		self.gameIsActive = False

@@ -9,12 +9,12 @@ class Player(character.Character):
 	power = 1			# bomb power
 	speed = 1			# player movement speed
 
-	def __init__(self, name, imageName, id, point, agentAlgo):
+	def __init__(self, name, imageName, id, point, agent):
 		character.Character.__init__(self, name, "players/"+imageName, point)
 		self.c = config.Config()
 		self.id = id
 		self.instance_of = 'player'
-		self.agent = agent.Agent(agentAlgo)
+		self.agent = agent
 	
 	# reset all stats if death is true
 	def reset(self,death):
