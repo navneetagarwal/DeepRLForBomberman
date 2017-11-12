@@ -27,12 +27,13 @@ class Game:
 	epochs = 0
 	playerAlgo = "random"
 
-	def __init__(self, mode, playerAlgo = "random", epochs = 1, isLoad=0, isSave=0):
+	def __init__(self, mode, playerAlgo = "random", epochs = 1, isLoad=0, isSave=0, isGraphics=0):
 		self.epochs = epochs
 		self.playerAlgo = playerAlgo
 		self.isLoad = isLoad
 		self.isSave = isSave
 		self.agent = agent.Agent(playerAlgo, isLoad)
+		self.isGraphics = isGraphics
 
 		self.c = config.Config()
 
@@ -41,10 +42,11 @@ class Game:
 		self.mode = mode
 		self.initVar()
 
-		pygame.init()
-		self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
-		pygame.display.set_caption("Bomberman")
-		
+		if isGraphics:
+			pygame.init()
+			self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
+			pygame.display.set_caption("Bomberman")
+			
 		# init preloader / join server
 		if self.mode == self.c.MULTI:
 			preloader = pygame.image.load(self.c.IMAGE_PATH + "loading.png").convert()
@@ -174,9 +176,10 @@ class Game:
 			self.field = board.Board(0,0)
 			self.timer = 5*60+1
 
-		self.drawBoard()
-		self.drawInterface()
-		self.updateTimer()
+		if isGraphics:
+			self.drawBoard()
+			self.drawInterface()
+			self.updateTimer()
 
 		# players do not have to be reinitialized in single player after the first time
 		if self.firstRun:
@@ -253,14 +256,17 @@ class Game:
 		# Set the start state
 		self.user.agent.setState(self.getObservableState())
 
-		clock = pygame.time.Clock()
-		pygame.time.set_timer(pygame.USEREVENT,120)
-		pygame.time.set_timer(pygame.USEREVENT+1,60)
+		if isGraphics:
+			clock = pygame.time.Clock()
+			pygame.time.set_timer(pygame.USEREVENT,120)
+			pygame.time.set_timer(pygame.USEREVENT+1,60)
+		
 		cyclicCounter = 0
 		self.gameIsActive = True
 
 		while self.gameIsActive:
-			clock.tick(self.c.FPS)
+			if isGraphics:
+				clock.tick(self.c.FPS)
 			
 			self.checkPlayerEnemyCollision()
 			self.checkWinConditions()
@@ -308,15 +314,16 @@ class Game:
 				sys.stdout.write("STAY\n")
 			else:
 				# ERROR
-				sys.stdout.write("-------GOT WRONG ACTION---------\n")
+				assert (False), "WRONG ACTION"
 
 			for e in self.enemies:
 				probToMove = random.random()
 				if(probToMove <= self.c.ENEMY_MOVE_PROB):	
 					self.movementHelper(e,e.nextMove())
 
-			self.updateDisplayInfo()
-			pygame.display.update()
+			if isGraphics:
+				self.updateDisplayInfo()
+				pygame.display.update()
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
