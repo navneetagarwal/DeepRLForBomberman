@@ -9,8 +9,9 @@ class Player(character.Character):
 	power = 1			# bomb power
 	speed = 1			# player movement speed
 
-	def __init__(self, name, imageName, id, point, agent):
-		character.Character.__init__(self, name, "players/"+imageName, point)
+	def __init__(self, name, imageName, id, point, agent, isGraphics):
+		self.isGraphics = isGraphics
+		character.Character.__init__(self, name, "players/"+imageName, point, self.isGraphics)
 		self.c = config.Config()
 		self.id = id
 		self.instance_of = 'player'
@@ -18,7 +19,8 @@ class Player(character.Character):
 	
 	# reset all stats if death is true
 	def reset(self,death):
-		character.Character.reset(self,True)
+		if self.isGraphics:
+			character.Character.reset(self,True)
 		if death:
 			self.currentBomb = self.maxBombs = 1
 			self.power = 1
@@ -27,7 +29,7 @@ class Player(character.Character):
 	def deployBomb(self):
 		if self.currentBomb > 0:
 			self.currentBomb -= 1
-			b = bomb.Bomb(self)
+			b = bomb.Bomb(self, self.isGraphics)
 			return b
 		return None
 

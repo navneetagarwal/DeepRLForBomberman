@@ -1,20 +1,16 @@
 import sys
+import argparse
 
 if __name__ == "__main__":
 
-	if len(sys.argv) != 5:
-		sys.stdout.write("Incorrect Usage: (Number of arguments = 4)\n \
-			Arg 1 -> Agent algorithm (eg. random, reflex, etc.)\n \
-			Arg 2 -> Number of epochs (eg. 1, 2, etc.)\n \
-			Arg 3 -> 0 - Dont Load 1 - Load Model\n \
-			Arg 4 -> 0 - Dont Save 1 - Save Model\n")
-		exit()
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--algorithm', 	choices=["random", "reflex", "DeepQ"], default="DeepQ", help='Which Algorithm to Use')
+	parser.add_argument('--epochs', type=int, default=1, help='Choose the number of epochs')
+	parser.add_argument('--isLoad', action="store_true", default=False, help='Load Model')
+	parser.add_argument('--isSave', action="store_true", default=False, help='Store Model')
+	parser.add_argument('--graphics', action="store_true", default=False, help='Which Algorithm to Use')	
+	args = parser.parse_args()
 
 	import titlescreen
 	
-	playerAlgo = sys.argv[1]	
-	epochs = int(sys.argv[2])
-	isLoad = int(sys.argv[3])
-	isSave = int(sys.argv[4])
-
-	t = titlescreen.Titlescreen(playerAlgo, epochs, isLoad, isSave)
+	t = titlescreen.Titlescreen(args.algorithm, args.epochs, args.isLoad, args.isSave, args.graphics)

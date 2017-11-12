@@ -1,8 +1,10 @@
 import config, pygame
 
 class Tile(pygame.sprite.Sprite):
-	def __init__(self,type):
-		pygame.sprite.Sprite.__init__(self)
+	def __init__(self,type, isGraphics):
+		self.isGraphics = isGraphics
+		if self.isGraphics:
+			pygame.sprite.Sprite.__init__(self)
 		self.c = config.Config()
 		self.type = type
 
@@ -38,8 +40,9 @@ class Tile(pygame.sprite.Sprite):
 		elif self.type == self.c.BOMB_UP or self.type == self.c.POWER_UP:
 			self.passable = True
 			self.destroyable = True
-
-		self.image = pygame.image.load(self.c.IMAGE_PATH + "tiles/" + str(self.type) + ".png").convert()
+		
+		if self.isGraphics:
+			self.image = pygame.image.load(self.c.IMAGE_PATH + "tiles/" + str(self.type) + ".png").convert()
 	
 	def destroy(self):
 		if self.powerup != None:

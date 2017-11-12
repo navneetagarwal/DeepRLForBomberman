@@ -42,7 +42,7 @@ class Game:
 		self.mode = mode
 		self.initVar()
 
-		if isGraphics:
+		if self.isGraphics:
 			pygame.init()
 			self.screen = pygame.display.set_mode((self.c.WIDTH,self.c.HEIGHT),pygame.DOUBLEBUF)
 			pygame.display.set_caption("Bomberman")
@@ -57,7 +57,8 @@ class Game:
 		for i in range(self.epochs):
 			# repeat for multiple levels
 			self.resetGame()
-			self.clearBackground()
+			if self.isGraphics:
+				self.clearBackground()
 			self.initGame()
 		
 		if isSave:
@@ -168,15 +169,16 @@ class Game:
 
 	def initGame(self):
 		if self.mode == self.c.SINGLE:
-			self.printText("Level %d-%d" % (self.stage,self.level),(40,15))
-			self.field = board.Board(self.stage, self.level)
+			if self.isGraphics:
+				self.printText("Level %d-%d" % (self.stage,self.level),(40,15))
+			self.field = board.Board(self.stage, self.level, self.isGraphics)
 			self.timer = 3*60+1
 		elif self.mode == self.c.MULTI:
 			self.printText("Multiplayer",(40,15))
 			self.field = board.Board(0,0)
 			self.timer = 5*60+1
 
-		if isGraphics:
+		if self.isGraphics:
 			self.drawBoard()
 			self.drawInterface()
 			self.updateTimer()
@@ -229,9 +231,10 @@ class Game:
 	
 	def initPlayers(self):
 		if self.mode == self.c.SINGLE:
-			self.user = player.Player("Player 1","p_1_",0,(40,40),self.agent)
+			self.user = player.Player("Player 1","p_1_",0,(40,40),self.agent, self.isGraphics)
 			self.players.append(self.user)
-			self.blit(self.user.image, self.user.position)
+			if self.isGraphics:
+				self.blit(self.user.image, self.user.position)
 		elif self.mode == self.c.MULTI:
 			for p in self.players:
 				if str(p.id) == str(self.id):
@@ -240,7 +243,7 @@ class Game:
 
 	def initEnemies(self):
 		# generates 5 enemies
-		for i in range(0,5):
+		for i in range(0,1):
 			while True:
 				x = random.randint(6,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
 				y = random.randint(6,self.field.height-2)*40
@@ -248,15 +251,16 @@ class Game:
 				if self.field.getTile((x,y)).canPass() == True:
 					break
 
-			e = enemy.Enemy("Enemy", "e_%d_" % (random.randint(1,self.c.MAX_ENEMY_SPRITES)), (x,y))
+			e = enemy.Enemy("Enemy", "e_%d_" % (random.randint(1,self.c.MAX_ENEMY_SPRITES)), (x,y), self.isGraphics)
 			self.enemies.append(e)
-			self.blit(e.image, e.position)
+			if self.isGraphics:
+				self.blit(e.image, e.position)
 
 	def runGame(self):
 		# Set the start state
 		self.user.agent.setState(self.getObservableState())
 
-		if isGraphics:
+		if self.isGraphics:
 			clock = pygame.time.Clock()
 			pygame.time.set_timer(pygame.USEREVENT,120)
 			pygame.time.set_timer(pygame.USEREVENT+1,60)
@@ -265,7 +269,7 @@ class Game:
 		self.gameIsActive = True
 
 		while self.gameIsActive:
-			if isGraphics:
+			if self.isGraphics:
 				clock.tick(self.c.FPS)
 			
 			self.checkPlayerEnemyCollision()
@@ -281,7 +285,8 @@ class Game:
 			cyclicCounter += 1
 			if cyclicCounter == 3:
 				cyclicCounter = 0
-				self.updateTimer()
+				if self.isGraphics:
+					self.updateTimer()
 
 			if cyclicCounter%3 == 1:
 				self.clearExplosion()
@@ -291,19 +296,23 @@ class Game:
 			# Get action from agent
 			move = self.user.agent.get_action()
 			if move == "up":
-				self.user.getImage('up')
+				if self.isGraphics:
+					self.user.getImage('up')
 				self.movementHelper(self.user, [0, -1*self.c.TILE_SIZE])
 				sys.stdout.write("UP\n")
 			elif move == "down":
-				self.user.getImage('down')
+				if self.isGraphics:
+					self.user.getImage('down')
 				self.movementHelper(self.user, [0, 1*self.c.TILE_SIZE])
 				sys.stdout.write("DOWN\n")
 			elif move == "left":
-				self.user.getImage('left')
+				if self.isGraphics:
+					self.user.getImage('left')
 				self.movementHelper(self.user, [-1*self.c.TILE_SIZE, 0])
 				sys.stdout.write("LEFT\n")
 			elif move == "right":
-				self.user.getImage('right')
+				if self.isGraphics:
+					self.user.getImage('right')
 				self.movementHelper(self.user, [1*self.c.TILE_SIZE, 0])
 				sys.stdout.write("RIGHT\n")
 			elif move == "bomb":
@@ -321,13 +330,14 @@ class Game:
 				if(probToMove <= self.c.ENEMY_MOVE_PROB):	
 					self.movementHelper(e,e.nextMove())
 
-			if isGraphics:
+			if self.isGraphics:
 				self.updateDisplayInfo()
 				pygame.display.update()
 
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					self.forceQuit()
+			if self.isGraphics:
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						self.forceQuit()
 				# elif event.type == pygame.KEYDOWN:
 				# 	# deploy bomb
 				# 	k = event.key
@@ -396,7 +406,8 @@ class Game:
 			self.bombs.append(b)
 		
 	def blit(self,obj,pos):
-		self.screen.blit(obj,pos)
+		if self.isGraphics:
+			self.screen.blit(obj,pos)
 	#	pygame.display.flip()
 	
 	def movementHelper(self, char, point):
@@ -410,15 +421,18 @@ class Game:
 				char.setScore(50) # RFCT | BUG - VARIES DEPENDING ON POWER UP
 				char.gainPower(tile.type)
 				tile.destroy()
-				self.blit(tile.getBackground(),nPoint)
+				if self.isGraphics:
+					self.blit(tile.getBackground(),nPoint)
 			char.move(point)
 			
-			self.blit(char.image, char.position)
+			if self.isGraphics:
+				self.blit(char.image, char.position)
 
 			t = self.field.getTile(char.old)
-			if t.bomb != None:
-				self.blit(t.getBackground(),char.old)
-			self.blit(t.getImage(), char.old)
+			if self.isGraphics:
+				if t.bomb != None:
+					self.blit(t.getBackground(),char.old)
+				self.blit(t.getImage(), char.old)
 
 	def updateBombs(self):
 		for bomb in self.bombs:
@@ -432,11 +446,13 @@ class Game:
 			self.bombs.remove(bomb)
 			tile = self.field.getTile(bomb.position)
 			tile.bomb = None
-			self.blit(tile.getImage(), bomb.position)
+			if self.isGraphics:
+				self.blit(tile.getImage(), bomb.position)
 			self.resetTiles.append(bomb.position)
 
-			explosion = pygame.image.load(self.c.IMAGE_PATH + "explosion_c.png").convert()
-			self.blit(explosion,bomb.position)
+			if self.isGraphics:
+				explosion = pygame.image.load(self.c.IMAGE_PATH + "explosion_c.png").convert()
+				self.blit(explosion,bomb.position)
 
 	def triggerBombChain(self, bomb):
 		if bomb == None:
@@ -475,15 +491,17 @@ class Game:
 				elif t.destroyable == True:
 					# if brick or powerup or player
 					t.destroy()
-					self.blit(t.getImage(),nPoint)
+					if self.isGraphics:
+						self.blit(t.getImage(),nPoint)
 					self.user.setScore(10)
 				break
 			else:
 				# path which explosion can travel on
 				self.checkPlayerEnemyBombCollision(nPoint, bomb.position)
 
-				explosion = pygame.image.load(self.c.IMAGE_PATH + "explosion_c.png").convert()
-				self.blit(explosion,nPoint)
+				if self.isGraphics:
+					explosion = pygame.image.load(self.c.IMAGE_PATH + "explosion_c.png").convert()
+					self.blit(explosion,nPoint)
 				self.resetTiles.append(nPoint)
 			
 			# check bomb's power, this terminates the recursive loop
@@ -494,12 +512,14 @@ class Game:
 	def clearExplosion(self):
 		for point in self.resetTiles:
 			t = self.field.getTile(point)
-			self.blit(t.getImage(),point)
+			if self.isGraphics:
+				self.blit(t.getImage(),point)
 			self.resetTiles.remove(point)
 
 	def resetPlayerPosition(self, player, death):
 		player.reset(death)
-		self.blit(player.image,player.position)
+		if self.isGraphics:
+			self.blit(player.image,player.position)
 
 	def checkPlayerEnemyBombCollision(self, position, bomb_position):
 		# check if player was hit by bomb
