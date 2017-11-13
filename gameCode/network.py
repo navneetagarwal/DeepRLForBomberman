@@ -68,7 +68,10 @@ class network:
 		return loss
 
 	def saveNetwork(self):
-		os.mkdir('../models', 0775)
+		try:
+			os.stat('../models')
+		except:
+			os.mkdir('../models', 0775)
 		saver = tf.train.Saver()
 		save_path = saver.save(self.sess, "../models/model.ckpt")
   		print("Model saved in file: %s" % save_path)
