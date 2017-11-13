@@ -239,7 +239,7 @@ class DeepQAgent:
 		return -1, -1
 
 	def degree(self, userPosition, board, bombs, enemies, direction, depth):
-		print userPosition[0], userPosition[1]
+		# print userPosition[0], userPosition[1]
 		H = board.height
 		W = board.width
 		board1 = board.board

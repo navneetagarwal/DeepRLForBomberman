@@ -56,10 +56,13 @@ class Game:
 
 		for i in range(self.epochs):
 			# repeat for multiple levels
+			print "Running Epoch " + str(i)
 			self.resetGame()
 			if self.isGraphics:
 				self.clearBackground()
 			self.initGame()
+			print "Player Score - " + str(self.user.score)
+			self.initVar()
 		
 		if isSave:
 			self.agent.saveModel()
@@ -274,7 +277,7 @@ class Game:
 			
 			self.checkPlayerEnemyCollision()
 			self.checkWinConditions()
-			self.field.printBoard()
+			# self.field.printBoard()
 
 			# MULTIPLAYER
 			if self.mode == self.c.MULTI:
@@ -299,28 +302,29 @@ class Game:
 				if self.isGraphics:
 					self.user.getImage('up')
 				self.movementHelper(self.user, [0, -1*self.c.TILE_SIZE])
-				sys.stdout.write("UP\n")
+				# sys.stdout.write("UP\n")
 			elif move == "down":
 				if self.isGraphics:
 					self.user.getImage('down')
 				self.movementHelper(self.user, [0, 1*self.c.TILE_SIZE])
-				sys.stdout.write("DOWN\n")
+				# sys.stdout.write("DOWN\n")
 			elif move == "left":
 				if self.isGraphics:
 					self.user.getImage('left')
 				self.movementHelper(self.user, [-1*self.c.TILE_SIZE, 0])
-				sys.stdout.write("LEFT\n")
+				# sys.stdout.write("LEFT\n")
 			elif move == "right":
 				if self.isGraphics:
 					self.user.getImage('right')
 				self.movementHelper(self.user, [1*self.c.TILE_SIZE, 0])
-				sys.stdout.write("RIGHT\n")
+				# sys.stdout.write("RIGHT\n")
 			elif move == "bomb":
 				self.deployBomb(self.user)
-				sys.stdout.write("BOMB\n")
+				# sys.stdout.write("BOMB\n")
 			elif move == "stay":
 				# Do nothing
-				sys.stdout.write("STAY\n")
+				# sys.stdout.write("STAY\n")
+				pass
 			else:
 				# ERROR
 				assert (False), "WRONG ACTION"
@@ -556,7 +560,7 @@ class Game:
 
 	def gameover(self, player):
 		if self.mode == self.c.SINGLE:
-			print 'gameover - lost all lives | or time ran out'
+			# print 'gameover - lost all lives | or time ran out'
 			self.highscores.addScore(player.score)
 			self.gameIsActive = False
 			
