@@ -377,7 +377,7 @@ class Game:
 			event = self.getEvent()
 			self.user.agent.observe(state, reward, event)
 			self.user.agent.extract_features(state)
-	
+
 	def getObservableState(self):
 		enemies = []
 		bombs = []
@@ -385,11 +385,9 @@ class Game:
 		for enemy in self.enemies:
 			enemies.append(enemy)
 
-		
 		# Bombs	
 		for bomb in self.bombs:
 			bombs.append(bomb)
-
 
 		newState = observableState.ObservableState(self.field, self.user.position, enemies, bombs)
 		return newState
@@ -408,7 +406,8 @@ class Game:
 			tile = self.field.getTile(player.position)
 			tile.bomb = b
 			self.bombs.append(b)
-		
+			self.user.setScore(50)
+
 	def blit(self,obj,pos):
 		if self.isGraphics:
 			self.screen.blit(obj,pos)
@@ -462,7 +461,8 @@ class Game:
 		if bomb == None:
 			return
 		else:
-			bomb.triggered = True	
+			bomb.triggered = True
+			self.checkPlayerEnemyBombCollision(bomb.position)	
 			self.bombHelper(bomb,'left')	
 			self.bombHelper(bomb,'right')
 			self.bombHelper(bomb,'up')
@@ -501,7 +501,7 @@ class Game:
 				break
 			else:
 				# path which explosion can travel on
-				self.checkPlayerEnemyBombCollision(nPoint, bomb.position)
+				self.checkPlayerEnemyBombCollision(nPoint)
 
 				if self.isGraphics:
 					explosion = pygame.image.load(self.c.IMAGE_PATH + "explosion_c.png").convert()
@@ -525,11 +525,12 @@ class Game:
 		if self.isGraphics:
 			self.blit(player.image,player.position)
 
-	def checkPlayerEnemyBombCollision(self, position, bomb_position):
+	def checkPlayerEnemyBombCollision(self, position):
 		# check if player was hit by bomb
 		for player in self.players:
-			if player.position == position or player.position == bomb_position:
+			if player.position == position:
 				self.userEvent = "death"
+				self.user.setScore(-250)
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:

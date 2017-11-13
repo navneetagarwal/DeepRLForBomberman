@@ -106,6 +106,7 @@ class DeepQAgent:
 	def __init__(self, isLoad):
 		self.gamma = 0.9
 		self.eps = 0.2
+		self.maxBombs = 5
 		self.net = network(self.gamma)
 		# Start tf session
 		self.config = config.Config()
@@ -326,34 +327,67 @@ class DeepQAgent:
 
 
 	def extract_features(self, state):
+		
 		features = []
+		
 		# Get distance to nearest brick
 		distance_from_brick, direction_from_brick = self.shortest_distance(state.userPosition, self.config.BRICK, state.board, state.bombs, state.enemies)
 		features.append(distance_from_brick)
 		features.append(direction_from_brick)
+		
 		# Get distance to nearest powerup_bomb
 		distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board, state.bombs, state.enemies)
 		features.append(distance_from_bomb_up)
 		features.append(direction_from_bomb_up)
+		
 		# Get distance to nearest power_up
 		distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board, state.bombs, state.enemies)
 		features.append(distance_from_power_up)
 		features.append(direction_from_power_up)
+		
 		# Get distance to nearest enemy
 		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
 		features.append(distance_from_enemy)
 		features.append(direction_from_enemy)
+		
 		# Get distance to nearest bomb
 		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
 		features.append(distance_from_bomb)
 		features.append(direction_from_bomb)
+		
 		# If the bomberman is in range of a bomb
 		in_danger = self.in_range(state.userPosition, state.board, state.bombs)
 		features.append(in_danger)
+		
 		# Check for degree of freedom i.e. if a n length path exists from here
 		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "up", 3)
 		features.append(degree_of_freedom)
-
+		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "down", 3)
+		features.append(degree_of_freedom)
+		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "left", 3)
+		features.append(degree_of_freedom)
+		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "right", 3)
+		features.append(degree_of_freedom)
+		
+		# Bomb details
+		numBombs = 0
+		for i in range(len(state.bombs)):
+			bomb = (state.bombs)[i]
+			features.append(bomb.fuse)
+			features.append(bomb.range)
+			features.append(bomb.position[0]/40)
+			features.append(bomb.position[1]/40)
+			numBombs += 1
+		for i in range(self.maxBombs - numBombs):
+			features.append(0)
+			features.append(0)
+			features.append(0)
+			features.append(0)
+		
+		# User details
+		features.append(state.userPosition[0]/40)
+		features.append(state.userPosition[1]/40)
+		
 		return [features]		
 
 class Agent(object):

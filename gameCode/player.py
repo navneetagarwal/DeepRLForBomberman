@@ -42,8 +42,8 @@ class Player(character.Character):
 	
 	def setScore(self,score):
 		self.score += score
-		if self.score < 0:
-			self.score = 0
+		# if self.score < 0:
+			# self.score = 0
 
 	# RFCT - this was a bad idea
 	def loseLifeAndGameOver(self):
