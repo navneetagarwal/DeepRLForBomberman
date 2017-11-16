@@ -289,8 +289,7 @@ class Game:
 			cyclicCounter += 1
 			if cyclicCounter == 3:
 				cyclicCounter = 0
-				if self.isGraphics:
-					self.updateTimer()
+				self.updateTimer()
 
 			if cyclicCounter%3 == 1:
 				self.clearExplosion()
@@ -598,9 +597,11 @@ class Game:
 
 	def updateTimer(self):
 		self.timer -= 1
+		self.user.setScore(-1)
 
 		# user lost
 		if self.timer == 0:
+			self.user.setScore(-2500)
 			self.gameover(self.user)
 
 		mins = str(int(self.timer/60))
@@ -611,4 +612,5 @@ class Game:
 		if len(secs) == 1:
 			secs = "0"+secs
 		txt = "%s:%s" % (mins,secs)
-		self.printText(txt,(400,653))
+		if self.isGraphics:
+			self.printText(txt,(400,653))
