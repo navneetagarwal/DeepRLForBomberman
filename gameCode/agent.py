@@ -106,7 +106,7 @@ class DeepQAgent:
 	def __init__(self, isLoad, eps, annealRate):
 		self.gamma = 0.99
 		self.eps = eps
-		self.maxBombs = 5
+		self.maxBombs = 2
 		self.net = network(self.gamma)
 		# Start tf session
 		self.config = config.Config()
@@ -340,19 +340,19 @@ class DeepQAgent:
 		features.extend(direction_from_brick)
 		
 		# Get distance to nearest powerup_bomb
-		distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board, state.bombs, state.enemies)
-		features.append(distance_from_bomb_up)
-		features.extend(direction_from_bomb_up)
+		# distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board, state.bombs, state.enemies)
+		# features.append(distance_from_bomb_up)
+		# features.extend(direction_from_bomb_up)
 		
 		# Get distance to nearest power_up
-		distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board, state.bombs, state.enemies)
-		features.append(distance_from_power_up)
-		features.extend(direction_from_power_up)
+		# distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board, state.bombs, state.enemies)
+		# features.append(distance_from_power_up)
+		# features.extend(direction_from_power_up)
 		
 		# Get distance to nearest enemy
-		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
-		features.append(distance_from_enemy)
-		features.extend(direction_from_enemy)
+		# distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
+		# features.append(distance_from_enemy)
+		# features.extend(direction_from_enemy)
 		
 		# Get distance to nearest bomb
 		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
@@ -379,18 +379,18 @@ class DeepQAgent:
 			bomb = (state.bombs)[i]
 			features.append(bomb.fuse)
 			features.append(bomb.range)
-			features.append(bomb.position[0]/40)
-			features.append(bomb.position[1]/40)
+			# features.append(bomb.position[0]/40)
+			# features.append(bomb.position[1]/40)
 			numBombs += 1
 		for i in range(self.maxBombs - numBombs):
 			features.append(0)
 			features.append(0)
-			features.append(0)
-			features.append(0)
+			# features.append(0)
+			# features.append(0)
 		
 		# User details
-		features.append(state.userPosition[0]/40)
-		features.append(state.userPosition[1]/40)
+		# features.append(state.userPosition[0]/40)
+		# features.append(state.userPosition[1]/40)
 		
 		return [features]		
 

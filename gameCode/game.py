@@ -410,7 +410,9 @@ class Game:
 			tile = self.field.getTile(player.position)
 			tile.bomb = b
 			self.bombs.append(b)
-			self.user.setScore(50)
+			expectedReward = self.expectedBombReward(b)
+			print "BOMB - Extra reward of " + str(expectedReward)
+			self.user.setScore(50 + expectedReward)
 
 	def blit(self,obj,pos):
 		if self.isGraphics:
@@ -616,3 +618,50 @@ class Game:
 		txt = "%s:%s" % (mins,secs)
 		if self.isGraphics:
 			self.printText(txt,(400,653))
+
+	def expectedBombReward(self, bomb):
+
+		x = self.user.position[0]/self.c.TILE_SIZE
+		y = self.user.position[1]/self.c.TILE_SIZE
+		bomb_range = bomb.range
+		brick = self.c.BRICK
+		wall = self.c.WALL
+		board = self.field.board
+
+		reward = 0
+		brick_reward = 50
+
+		for i in range(bomb_range):
+			i += 1
+			if (board[y+i][x].type == brick):
+				reward += brick_reward
+				break
+			elif (board[y+i][x].type == wall):
+				break
+
+		for i in range(bomb_range):
+			i += 1
+			if (board[y-i][x].type == brick):
+				reward += brick_reward
+				break
+			elif (board[y-i][x].type == wall):
+				break
+
+		for i in range(bomb_range):
+			i += 1
+			if (board[y][x+i].type == brick):
+				reward += brick_reward
+				break
+			elif (board[y][x+i].type == wall):
+				break
+
+		for i in range(bomb_range):
+			i += 1
+			if (board[y][x-i].type == brick):
+				reward += brick_reward
+				break
+			elif (board[y][x-i].type == wall):
+				break
+
+		return reward
+		
