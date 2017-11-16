@@ -11,7 +11,7 @@ if __name__ == "__main__":
 	parser.add_argument('--graphics', action="store_true", default=False, help='Which Algorithm to Use')
 	parser.add_argument('--eps', type=float, default=0.5, help='Epsilon for E-Greedy strategy')
 	args = parser.parse_args()
-
+	# print args.eps
 	import titlescreen
 	
 	t = titlescreen.Titlescreen(args.algorithm, args.epochs, args.isLoad, args.isSave, args.graphics, args.eps)
