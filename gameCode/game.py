@@ -185,7 +185,6 @@ class Game:
 		if self.isGraphics:
 			self.drawBoard()
 			self.drawInterface()
-			self.updateTimer()
 
 		# players do not have to be reinitialized in single player after the first time
 		if self.firstRun:
@@ -193,6 +192,8 @@ class Game:
 			self.initPlayers()
 		else:
 			self.resetPlayerPosition(self.user,False)
+		
+		self.updateTimer()
 		
 		# no enemies in multiplayer
 		if self.mode == self.c.SINGLE:
