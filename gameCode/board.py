@@ -9,8 +9,9 @@ class Board:
 		for line in file:
 			self.board.append([])
 			for col in range(0,len(line)-1):
-				# sys.stdout.write(line[col])
+				sys.stdout.write(line[col])
 				self.board[row].append(tile.Tile(int(line[col]),self.isGraphics))
+			sys.stdout.write("\n")
 			row += 1
 			# print ""
 

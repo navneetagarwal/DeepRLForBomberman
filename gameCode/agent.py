@@ -107,7 +107,6 @@ class DeepQAgent:
 		self.gamma = 0.99
 		self.eps = eps
 		self.maxBombs = 5
-		self.annealRate = annealRate
 		self.net = network(self.gamma)
 		# Start tf session
 		self.config = config.Config()
@@ -116,7 +115,9 @@ class DeepQAgent:
 
 	def setState(self, state):
 		# self.state = state
-		self.eps -= self.annealRate
+
+		# TODO - Remove
+		# For just testing
 		self.state = self.extract_features(state)
 
 	def saveModel(self):
@@ -125,7 +126,9 @@ class DeepQAgent:
 	def getAction(self):
 		# self.net.findQ(self.state)
 
-		# print self.eps				
+		# TODO - Remove
+		# For just testing		
+
 		epsRand = random.random()
 		if(epsRand <= self.eps):
 			a = random.randint(0, 5)
@@ -148,13 +151,13 @@ class DeepQAgent:
 		y = parent[1]
 		children = []
 		if(x + 40 <= x_length*40):
-			children.append((x + 40, y, 0))
+			children.append((x + 40, y, [0, 1, 0, 0, 0]))
 		if(x - 40 >= 40):
-			children.append((x - 40, y, 1))
+			children.append((x - 40, y, [0, 0, 1, 0, 0]))
 		if(y + 40 <= y_length * 40):
-			children.append((x, y + 40, 2))
+			children.append((x, y + 40, [0, 0, 0, 1, 0]))
 		if(y - 40 >= 40):
-			children.append((x, y - 40, 3))
+			children.append((x, y - 40, [0, 0, 0, 0, 1]))
 		return children
 
 	def get_children(self, parent, y_length, x_length, direction):
@@ -183,7 +186,7 @@ class DeepQAgent:
 		# Visited Set
 		explored = []
 		queue = deque()
-		queue.append(((userPosition[0], userPosition[1]), 0, -1))
+		queue.append(((userPosition[0], userPosition[1]), 0, []))
 		explored.append((userPosition[0], userPosition[1]))
 		start = 1
 		while queue:
@@ -200,7 +203,7 @@ class DeepQAgent:
 				if (child[0], child[1]) not in explored and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					queue.append(((child[0], child[1]), node[1]+1, child[2]))
 					explored.append((child[0], child[1]))
-		return -1, -1
+		return 0, [0, 0, 0, 0, 0]
 
 	def shortest_distance_adversary(self, userPosition, board, adversary, bombs, enemies):
 		H = board.height
@@ -215,9 +218,11 @@ class DeepQAgent:
 		positions_enemies = [(position[0], position[1]) for position in positions_enemies]
 		queue = deque()
 		# Position Tuple, Depth, Direction
-		queue.append(((userPosition[0], userPosition[1]), 0, -1))
+		queue.append(((userPosition[0], userPosition[1]), 0, []))
 		# Positions
 		explored.append((userPosition[0], userPosition[1]))
+		if((userPosition[0], userPosition[1]) in positions):
+			return 0, [1, 0, 0, 0, 0]
 		start = 1
 		while queue:
 			node = queue.popleft()
@@ -234,7 +239,7 @@ class DeepQAgent:
 				if (child[0], child[1]) not in explored and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					queue.append(((child[0], child[1]), node[1]+1, child[2]))
 					explored.append((child[0], child[1]))
-		return -1, -1
+		return 0, [0, 0, 0, 0, 0]
 
 	def degree(self, userPosition, board, bombs, enemies, direction, depth):
 		# print userPosition[0], userPosition[1]
@@ -330,27 +335,27 @@ class DeepQAgent:
 		# Get distance to nearest brick
 		distance_from_brick, direction_from_brick = self.shortest_distance(state.userPosition, self.config.BRICK, state.board, state.bombs, state.enemies)
 		features.append(distance_from_brick)
-		features.append(direction_from_brick)
+		features.extend(direction_from_brick)
 		
 		# Get distance to nearest powerup_bomb
 		distance_from_bomb_up, direction_from_bomb_up = self.shortest_distance(state.userPosition, self.config.BOMB_UP, state.board, state.bombs, state.enemies)
 		features.append(distance_from_bomb_up)
-		features.append(direction_from_bomb_up)
+		features.extend(direction_from_bomb_up)
 		
 		# Get distance to nearest power_up
 		distance_from_power_up, direction_from_power_up = self.shortest_distance(state.userPosition, self.config.POWER_UP, state.board, state.bombs, state.enemies)
 		features.append(distance_from_power_up)
-		features.append(direction_from_power_up)
+		features.extend(direction_from_power_up)
 		
 		# Get distance to nearest enemy
 		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
 		features.append(distance_from_enemy)
-		features.append(direction_from_enemy)
+		features.extend(direction_from_enemy)
 		
 		# Get distance to nearest bomb
 		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
 		features.append(distance_from_bomb)
-		features.append(direction_from_bomb)
+		features.extend(direction_from_bomb)
 		
 		# If the bomberman is in range of a bomb
 		in_danger = self.in_range(state.userPosition, state.board, state.bombs)
@@ -394,7 +399,7 @@ class Agent(object):
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
 		elif algorithm == "DeepQ":
-			self.agent = DeepQAgent(isLoad, eps, annealRate) 
+			self.agent = DeepQAgent(isLoad, eps, annealRate)
 
 	
 	def extract_features(self, state):
@@ -407,9 +412,7 @@ class Agent(object):
 		self.agent.setState(state)
 
 	def get_action(self):
-		a = self.agent.getAction()
-		# print a
-		return a
+		return self.agent.getAction()
 
 	def observe(self, newState, reward, event):
 		self.agent.observe(newState, reward, event)

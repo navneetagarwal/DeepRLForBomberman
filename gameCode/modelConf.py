@@ -1,7 +1,7 @@
 class modelConf:
 	def __init__(self):
 		self.numLayers 		= 3
-		self.numInputs		= 37
+		self.numInputs		= 57
 		self.numOutputs		= 6
 		self.outputs 		= [40, 40, 6]
 		self.activations 	= ['sigmoid', 'sigmoid', 'softmax']
