@@ -272,7 +272,7 @@ class DeepQAgent:
 			vector.append((node[0], node[1]))
 			ans = 0
 			for child in children:
-				if child not in vector and child not in positions_bombs and child not in positions_enemies and board1[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
+				if (child[0], child[1]) not in vector and (child[0], child[1]) not in positions_bombs and (child[0], child[1]) not in positions_enemies and board1[child[1]/self.config.TILE_SIZE][child[0]/self.config.TILE_SIZE].type == self.config.GROUND:
 					ans += dfs(child, vector, depth-1)
 			vector.pop()
 			if ans > 0:
