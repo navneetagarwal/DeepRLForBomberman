@@ -32,7 +32,8 @@ class Game:
 		self.playerAlgo = playerAlgo
 		self.isLoad = isLoad
 		self.isSave = isSave
-		self.agent = agent.Agent(playerAlgo, isLoad)
+		annealRate = 0.2/self.epochs
+		self.agent = agent.Agent(playerAlgo, isLoad, annealRate)
 		self.isGraphics = isGraphics
 
 		self.c = config.Config()
@@ -298,6 +299,7 @@ class Game:
 
 			# Get action from agent
 			move = self.user.agent.get_action()
+			# print move
 			if move == "up":
 				if self.isGraphics:
 					self.user.getImage('up')
@@ -307,6 +309,7 @@ class Game:
 				if self.isGraphics:
 					self.user.getImage('down')
 				self.movementHelper(self.user, [0, 1*self.c.TILE_SIZE])
+				# self.user.setScore(80)
 				# sys.stdout.write("DOWN\n")
 			elif move == "left":
 				if self.isGraphics:
@@ -376,7 +379,7 @@ class Game:
 			reward = self.getReward()
 			event = self.getEvent()
 			self.user.agent.observe(state, reward, event)
-			self.user.agent.extract_features(state)
+			# self.user.agent.extract_features(state)
 
 	def getObservableState(self):
 		enemies = []
@@ -421,7 +424,7 @@ class Game:
 		# also check for bomb / special power ups here
 		if tile.canPass():
 			if char.instance_of == 'player' and tile.isPowerUp():
-				char.setScore(50) # RFCT | BUG - VARIES DEPENDING ON POWER UP
+				char.setScore(200) # RFCT | BUG - VARIES DEPENDING ON POWER UP
 				char.gainPower(tile.type)
 				tile.destroy()
 				if self.isGraphics:
@@ -497,7 +500,7 @@ class Game:
 					t.destroy()
 					if self.isGraphics:
 						self.blit(t.getImage(),nPoint)
-					self.user.setScore(10)
+					self.user.setScore(50)
 				break
 			else:
 				# path which explosion can travel on
@@ -530,7 +533,7 @@ class Game:
 		for player in self.players:
 			if player.position == position:
 				self.userEvent = "death"
-				self.user.setScore(-250)
+				self.user.setScore(-2500)
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:
@@ -551,7 +554,7 @@ class Game:
 				# RFCT - code repetition
 				if self.user.loseLifeAndGameOver():
 					self.gameover(self.user)
-				self.user.setScore(-250)
+				self.user.setScore(-2500)
 				self.resetPlayerPosition(self.user,True)
 	
 	def checkWinConditions(self):
@@ -584,7 +587,7 @@ class Game:
 	
 	def victory(self):
 		self.gameIsActive = False
-		self.user.setScore(500)
+		self.user.setScore(5000)
 		self.level += 1
 		if self.level > 6:
 			self.stage += 1

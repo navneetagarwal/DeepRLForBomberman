@@ -103,10 +103,11 @@ class ReflexAgent:
 		self.state = newState
 
 class DeepQAgent:
-	def __init__(self, isLoad):
+	def __init__(self, isLoad, annealRate):
 		self.gamma = 0.9
 		self.eps = 0.2
 		self.maxBombs = 5
+		self.annealRate = annealRate
 		self.net = network(self.gamma)
 		# Start tf session
 		self.config = config.Config()
@@ -115,9 +116,7 @@ class DeepQAgent:
 
 	def setState(self, state):
 		# self.state = state
-
-		# TODO - Remove
-		# For just testing
+		self.eps -= self.annealRate
 		self.state = self.extract_features(state)
 
 	def saveModel(self):
@@ -126,9 +125,7 @@ class DeepQAgent:
 	def getAction(self):
 		# self.net.findQ(self.state)
 
-		# TODO - Remove
-		# For just testing		
-
+		# print self.eps				
 		epsRand = random.random()
 		if(epsRand <= self.eps):
 			a = random.randint(0, 5)
@@ -391,13 +388,13 @@ class DeepQAgent:
 		return [features]		
 
 class Agent(object):
-	def __init__(self, algorithm, isLoad):
+	def __init__(self, algorithm, isLoad, annealRate):
 		if algorithm == "random":
 			self.agent = RandomAgent()
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
 		elif algorithm == "DeepQ":
-			self.agent = DeepQAgent(isLoad) 
+			self.agent = DeepQAgent(isLoad, annealRate) 
 
 	
 	def extract_features(self, state):
@@ -410,7 +407,9 @@ class Agent(object):
 		self.agent.setState(state)
 
 	def get_action(self):
-		return self.agent.getAction()
+		a = self.agent.getAction()
+		# print a
+		return a
 
 	def observe(self, newState, reward, event):
 		self.agent.observe(newState, reward, event)
