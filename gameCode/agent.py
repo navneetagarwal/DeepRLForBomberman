@@ -106,6 +106,7 @@ class DeepQAgent:
 	def __init__(self, isLoad, eps, annealRate):
 		self.gamma = 0.99
 		self.eps = eps
+		self.annealRate = annealRate
 		self.maxBombs = 2
 		self.net = network(self.gamma)
 		# Start tf session
@@ -115,9 +116,7 @@ class DeepQAgent:
 
 	def setState(self, state):
 		# self.state = state
-
-		# TODO - Remove
-		# For just testing
+		self.eps -= self.annealRate
 		self.state = self.extract_features(state)
 
 	def saveModel(self):
@@ -125,9 +124,6 @@ class DeepQAgent:
 
 	def getAction(self):
 		# self.net.findQ(self.state)
-
-		# TODO - Remove
-		# For just testing		
 
 		epsRand = random.random()
 		if(epsRand <= self.eps):

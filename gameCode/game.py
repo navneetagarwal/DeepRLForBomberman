@@ -411,7 +411,6 @@ class Game:
 			tile.bomb = b
 			self.bombs.append(b)
 			expectedReward = self.expectedBombReward(b)
-			print "BOMB - Extra reward of " + str(expectedReward)
 			self.user.setScore(50 + expectedReward)
 
 	def blit(self,obj,pos):
