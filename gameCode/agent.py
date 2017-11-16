@@ -188,6 +188,8 @@ class DeepQAgent:
 		queue = deque()
 		queue.append(((userPosition[0], userPosition[1]), 0, []))
 		explored.append((userPosition[0], userPosition[1]))
+		if(board[userPosition[1]/self.config.TILE_SIZE][userPosition[0]/self.config.TILE_SIZE].type == type_req):
+			return 0, [1, 0, 0, 0, 0]
 		start = 1
 		while queue:
 			node = queue.popleft()
