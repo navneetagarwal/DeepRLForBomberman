@@ -27,13 +27,14 @@ class Game:
 	epochs = 0
 	playerAlgo = "random"
 
-	def __init__(self, mode, playerAlgo = "random", epochs = 1, isLoad=0, isSave=0, isGraphics=0):
+	def __init__(self, mode, playerAlgo, epochs, isLoad, isSave, isGraphics, eps):
 		self.epochs = epochs
 		self.playerAlgo = playerAlgo
 		self.isLoad = isLoad
 		self.isSave = isSave
-		annealRate = 0.2/self.epochs
-		self.agent = agent.Agent(playerAlgo, isLoad, annealRate)
+		self.eps = eps
+		annealRate = self.eps/self.epochs
+		self.agent = agent.Agent(playerAlgo, isLoad, eps, annealRate)
 		self.isGraphics = isGraphics
 
 		self.c = config.Config()

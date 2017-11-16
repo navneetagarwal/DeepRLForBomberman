@@ -103,9 +103,9 @@ class ReflexAgent:
 		self.state = newState
 
 class DeepQAgent:
-	def __init__(self, isLoad, annealRate):
-		self.gamma = 0.9
-		self.eps = 0.2
+	def __init__(self, isLoad, eps, annealRate):
+		self.gamma = 0.99
+		self.eps = eps
 		self.maxBombs = 5
 		self.annealRate = annealRate
 		self.net = network(self.gamma)
@@ -388,13 +388,13 @@ class DeepQAgent:
 		return [features]		
 
 class Agent(object):
-	def __init__(self, algorithm, isLoad, annealRate):
+	def __init__(self, algorithm, isLoad, eps, annealRate):
 		if algorithm == "random":
 			self.agent = RandomAgent()
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
 		elif algorithm == "DeepQ":
-			self.agent = DeepQAgent(isLoad, annealRate) 
+			self.agent = DeepQAgent(isLoad, eps, annealRate) 
 
 	
 	def extract_features(self, state):

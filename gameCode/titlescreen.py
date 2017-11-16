@@ -2,7 +2,7 @@ import sys, pygame, config, game, highscore
 
 class Titlescreen():
 
-	def __init__(self, playerAlgo, epochs, isLoad, isSave, isGraphics):
+	def __init__(self, playerAlgo, epochs, isLoad, isSave, isGraphics, eps):
 		self.c = config.Config()
 		exitMain = False
 
@@ -54,15 +54,15 @@ class Titlescreen():
 			# 				pygame.quit() # Exit clicked
 
 		# sys.stdout.write("Runnning for Epoch " + str(i) + "\n")
-		self.singlePlayer(playerAlgo, epochs, isLoad, isSave, isGraphics)
+		self.singlePlayer(playerAlgo, epochs, isLoad, isSave, isGraphics, eps)
 
 	def withinBoundary(self, x1, x2, y1, y2):
 		if pygame.mouse.get_pos()[0] >= x1 and pygame.mouse.get_pos()[0] <= x2 and pygame.mouse.get_pos()[1] >= y1 and pygame.mouse.get_pos()[1] <= y2:
 			return True
 		return False
 
-	def singlePlayer(self, playerAlgo, epochs, isLoad, isSave, isGraphics):
-		g = game.Game(self.c.SINGLE, playerAlgo, epochs, isLoad, isSave, isGraphics)
+	def singlePlayer(self, playerAlgo, epochs, isLoad, isSave, isGraphics, eps):
+		g = game.Game(self.c.SINGLE, playerAlgo, epochs, isLoad, isSave, isGraphics, eps)
 
 	def multiplayer(self):
 		g = game.Game(self.c.MULTI)
