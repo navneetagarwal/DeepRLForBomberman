@@ -1,10 +1,10 @@
 class modelConf:
 	def __init__(self):
 		self.numLayers 		= 2
-		self.numInputs		= 21
+		self.numInputs		= 7
 		self.numOutputs		= 6
-		self.outputs 		= [50, 6]
-		self.activations 	= ['sigmoid', 'softmax']
+		self.outputs 		= [14, 6]
+		self.activations 	= ['tanh', 'tanh']
 		self.lr 			= 0.01
 
 		assert (self.numLayers == len(self.outputs)), "Incompatible Model Specification"

@@ -103,20 +103,41 @@ class ReflexAgent:
 		self.state = newState
 
 class DeepQAgent:
-	def __init__(self, isLoad, eps, annealRate):
-		self.gamma = 0.99
+	def __init__(self, isLoad, eps, annealRate, isTest):
+		self.gamma = 0.90
 		self.eps = eps
 		self.annealRate = annealRate
 		self.maxBombs = 2
 		self.net = network(self.gamma)
+		self.isTest = isTest
+		self.nonRedundantActions = None
 		# Start tf session
 		self.config = config.Config()
 		self.net._startSess(isLoad)
 
+	def getNonRedundantActions(self, state):
+		playerX = state.userPosition[0]/self.config.TILE_SIZE
+		playerY = state.userPosition[1]/self.config.TILE_SIZE
+		board = state.board.board
+		acts = [5]
+		if((state.user.currentBomb > 0) and (board[playerY][playerX].bomb is None)):
+			acts.append(4)
+		if(board[playerY - 1][playerX].canPass()):
+			acts.append(0)
+		if(board[playerY + 1][playerX].canPass()):
+			acts.append(1)
+		if(board[playerY][playerX-1].canPass()):
+			acts.append(2)
+		if(board[playerY][playerX+1].canPass()):
+			acts.append(3)
+		# print state.userPosition
+		# print acts
+		return acts
 
 	def setState(self, state):
 		# self.state = state
 		self.eps -= self.annealRate
+		self.nonRedundantActions = self.getNonRedundantActions(state)
 		self.state = self.extract_features(state)
 
 	def saveModel(self):
@@ -124,21 +145,26 @@ class DeepQAgent:
 
 	def getAction(self):
 		# self.net.findQ(self.state)
-
 		epsRand = random.random()
 		if(epsRand <= self.eps):
-			a = random.randint(0, 5)
+			# CHANGED TO RANDOM FROM NON REDUNDANT ACTIONS
+			# a = random.randint(0, 5)
+			a = self.nonRedundantActions[random.randrange(0,len(self.nonRedundantActions))]
 		else:
 			Q = self.net.findQ(self.state)
-			a = np.argmax(Q)
+			bestInd = np.argmax(Q[0,self.nonRedundantActions])
+			a = self.nonRedundantActions[bestInd]
+		# print a
 		self.action = a
 		return 'up down left right bomb stay'.split()[a]
 
 	def observe(self, newState, reward, event):
 		# TODO - Remove
-		# For just testing		
+		# For just testing
+		self.nonRedundantActions = self.getNonRedundantActions(newState)
 		newState = self.extract_features(newState)
-		self.net.trainNetwork(self.state, self.action, reward, newState)
+		if not self.isTest:
+			self.net.trainNetwork(self.state, self.action, reward, newState)
 		self.state = newState
 
 
@@ -351,54 +377,57 @@ class DeepQAgent:
 		# features.extend(direction_from_enemy)
 		
 		# Get distance to nearest bomb
-		distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
-		features.append(distance_from_bomb)
-		features.extend(direction_from_bomb)
+		# distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
+		# features.append(distance_from_bomb)
+		# features.extend(direction_from_bomb)
 		
-		# If the bomberman is in range of a bomb
-		in_danger = self.in_range(state.userPosition, state.board, state.bombs)
-		features.append(in_danger)
+		# # If the bomberman is in range of a bomb
+		# in_danger = self.in_range(state.userPosition, state.board, state.bombs)
+		# features.append(in_danger)
 		
 		# Check for degree of freedom i.e. if a n length path exists from here
-		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "up", 3)
-		features.append(degree_of_freedom)
-		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "down", 3)
-		features.append(degree_of_freedom)
-		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "left", 3)
-		features.append(degree_of_freedom)
-		degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "right", 3)
-		features.append(degree_of_freedom)
+		# degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "up", 3)
+		# features.append(degree_of_freedom)
+		# degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "down", 3)
+		# features.append(degree_of_freedom)
+		# degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "left", 3)
+		# features.append(degree_of_freedom)
+		# degree_of_freedom = self.degree(state.userPosition, state.board, state.bombs, state.enemies, "right", 3)
+		# features.append(degree_of_freedom)
 		
 		# Bomb details
-		numBombs = 0
-		for i in range(len(state.bombs)):
-			bomb = (state.bombs)[i]
-			features.append(bomb.fuse)
-			features.append(bomb.range)
-			# features.append(bomb.position[0]/40)
-			# features.append(bomb.position[1]/40)
-			numBombs += 1
-		for i in range(self.maxBombs - numBombs):
-			features.append(0)
-			features.append(0)
+		# numBombs = 0
+		# for i in range(len(state.bombs)):
+		# 	bomb = (state.bombs)[i]
+		# 	features.append(bomb.fuse)
+		# 	features.append(bomb.range)
+		# 	# features.append(bomb.position[0]/40)
+		# 	# features.append(bomb.position[1]/40)
+		# 	numBombs += 1
+		
+		# for i in range(self.maxBombs - numBombs):
+		# 	features.append(0)
+		# 	features.append(0)
+		
 			# features.append(0)
 			# features.append(0)
 		
 		# User details
 		# features.append(state.userPosition[0]/40)
 		# features.append(state.userPosition[1]/40)
+
+		features.append(state.user.currentBomb)
 		
 		return [features]		
 
 class Agent(object):
-	def __init__(self, algorithm, isLoad, eps, annealRate):
+	def __init__(self, algorithm, isLoad, eps, annealRate, isTest):
 		if algorithm == "random":
 			self.agent = RandomAgent()
 		elif algorithm == "reflex":
 			self.agent = ReflexAgent()
 		elif algorithm == "DeepQ":
-			self.agent = DeepQAgent(isLoad, eps, annealRate)
-
+			self.agent = DeepQAgent(isLoad, eps, annealRate, isTest)
 	
 	def extract_features(self, state):
 		return self.agent.extract_features(state)
@@ -410,7 +439,9 @@ class Agent(object):
 		self.agent.setState(state)
 
 	def get_action(self):
-		return self.agent.getAction()
+		a = self.agent.getAction()
+		# print a
+		return a
 
 	def observe(self, newState, reward, event):
 		self.agent.observe(newState, reward, event)

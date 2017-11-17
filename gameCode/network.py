@@ -2,6 +2,7 @@
 # from keras.layers import Dense, Activation
 # from keras.utils.vis_utils import plot_model
 from modelConf import modelConf
+import copy
 import tensorflow as tf
 import numpy as np
 import os
@@ -37,11 +38,14 @@ class network:
 
 		self.Q = layers[-1]
 
+		global_step = tf.Variable(0, trainable=False)
+		learning_rate = tf.train.exponential_decay(self.conf.lr, global_step, 10000, 0.80, staircase=True)
+
 		#We will provide the next Q from the training function
 		self.optimalQ = tf.placeholder(shape=[1,self.outputDim], dtype=tf.float32)
 		self.loss = tf.reduce_sum(tf.square(self.optimalQ - self.Q))
 		trainer = tf.train.GradientDescentOptimizer(learning_rate=self.conf.lr)
-		self.backProp = trainer.minimize(self.loss)
+		self.backProp = trainer.minimize(self.loss, global_step=global_step)
 
 	def _startSess(self, loadModel):
 		self.sess = tf.Session()
@@ -58,13 +62,35 @@ class network:
 	def trainNetwork(self, state, action, reward, nextState):
 		Q = self.findQ(state)		
 		nextQ = self.findQ(nextState)
-		bestVal = np.argmax(nextQ)
+		bestVal = np.max(nextQ)
 		updatedVal = reward + (self.gamma*bestVal)
 		
 		# Make the optimal Q vector for training
-		optimalQ = Q
+		optimalQ = copy.deepcopy(Q)
 		optimalQ[0,action] = updatedVal
+
+		# if (reward==50):
+		# print updatedVal, action, state
+		# print Q
+
 		loss,_ = self.sess.run([self.loss, self.backProp], feed_dict={self.inp: state, self.optimalQ: optimalQ})
+
+		# if (reward==50):
+		# print loss
+		# Q = self.findQ(state)
+		# print Q
+		# Q,optimalQ = self.sess.run([self.Q, self.optimalQ], feed_dict={self.inp: state, self.optimalQ: optimalQ})
+
+		# if(reward == 50):
+		# 	print "--------------------------"
+		# 	print state, action, reward, nextState
+		# 	print Q[0,action], updatedVal
+		# 	print Q, optimalQ
+		# 	Q = self.findQ(state)
+		# 	print Q[0,action]
+		# 	print loss
+		# 	print "--------------------------"
+
 		return loss
 
 	def saveNetwork(self):

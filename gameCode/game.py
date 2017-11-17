@@ -27,14 +27,14 @@ class Game:
 	epochs = 0
 	playerAlgo = "random"
 
-	def __init__(self, mode, playerAlgo, epochs, isLoad, isSave, isGraphics, eps):
+	def __init__(self, mode, playerAlgo, epochs, isLoad, isSave, isGraphics, eps, isTest):
 		self.epochs = epochs
 		self.playerAlgo = playerAlgo
 		self.isLoad = isLoad
 		self.isSave = isSave
 		self.eps = eps
 		annealRate = self.eps/self.epochs
-		self.agent = agent.Agent(playerAlgo, isLoad, eps, annealRate)
+		self.agent = agent.Agent(playerAlgo, isLoad, eps, annealRate, isTest)
 		self.isGraphics = isGraphics
 
 		self.c = config.Config()
@@ -251,9 +251,11 @@ class Game:
 		# generates 5 enemies
 		for i in range(0,1):
 			while True:
-				x = random.randint(6,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
-				y = random.randint(6,self.field.height-2)*40
-
+				x = random.randint(4,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
+				# TODO
+				# y = random.randint(1,self.field.height-2)*40
+				y = 40
+				# print x,y
 				if self.field.getTile((x,y)).canPass() == True:
 					break
 
@@ -393,7 +395,7 @@ class Game:
 		for bomb in self.bombs:
 			bombs.append(bomb)
 
-		newState = observableState.ObservableState(self.field, self.user.position, enemies, bombs)
+		newState = observableState.ObservableState(self.field, self.user.position, enemies, bombs, self.user)
 		return newState
 
 	def getReward(self):
@@ -411,7 +413,7 @@ class Game:
 			tile.bomb = b
 			self.bombs.append(b)
 			expectedReward = self.expectedBombReward(b)
-			self.user.setScore(50 + expectedReward)
+			self.user.setScore(expectedReward)
 
 	def blit(self,obj,pos):
 		if self.isGraphics:
@@ -426,7 +428,7 @@ class Game:
 		# also check for bomb / special power ups here
 		if tile.canPass():
 			if char.instance_of == 'player' and tile.isPowerUp():
-				char.setScore(200) # RFCT | BUG - VARIES DEPENDING ON POWER UP
+				# char.setScore(200) # RFCT | BUG - VARIES DEPENDING ON POWER UP
 				char.gainPower(tile.type)
 				tile.destroy()
 				if self.isGraphics:
@@ -502,7 +504,7 @@ class Game:
 					t.destroy()
 					if self.isGraphics:
 						self.blit(t.getImage(),nPoint)
-					self.user.setScore(50)
+					# self.user.setScore(50)
 				break
 			else:
 				# path which explosion can travel on
@@ -535,7 +537,7 @@ class Game:
 		for player in self.players:
 			if player.position == position:
 				self.userEvent = "death"
-				self.user.setScore(-2500)
+				# self.user.setScore(-500)
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:
@@ -556,7 +558,7 @@ class Game:
 				# RFCT - code repetition
 				if self.user.loseLifeAndGameOver():
 					self.gameover(self.user)
-				self.user.setScore(-2500)
+				# self.user.setScore(-500)
 				self.resetPlayerPosition(self.user,True)
 	
 	def checkWinConditions(self):
@@ -589,7 +591,7 @@ class Game:
 	
 	def victory(self):
 		self.gameIsActive = False
-		self.user.setScore(5000)
+		self.user.setScore(500)
 		self.level += 1
 		if self.level > 6:
 			self.stage += 1
@@ -600,11 +602,11 @@ class Game:
 
 	def updateTimer(self):
 		self.timer -= 1
-		self.user.setScore(-1)
+		# self.user.setScore(-1)
 
 		# user lost
 		if self.timer == 0:
-			self.user.setScore(-2500)
+			# self.user.setScore(-500)
 			self.gameover(self.user)
 
 		mins = str(int(self.timer/60))
@@ -628,7 +630,7 @@ class Game:
 		board = self.field.board
 
 		reward = 0
-		brick_reward = 50
+		brick_reward = 1
 
 		for i in range(bomb_range):
 			i += 1
