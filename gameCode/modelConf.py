@@ -1,9 +1,9 @@
 class modelConf:
 	def __init__(self):
 		self.numLayers 		= 2
-		self.numInputs		= 7
+		self.numInputs		= 10
 		self.numOutputs		= 6
-		self.outputs 		= [14, 6]
+		self.outputs 		= [20, 6]
 		self.activations 	= ['tanh', 'tanh']
 		self.lr 			= 0.01
 

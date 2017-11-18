@@ -107,7 +107,7 @@ class DeepQAgent:
 		self.gamma = 0.90
 		self.eps = eps
 		self.annealRate = annealRate
-		self.maxBombs = 2
+		self.maxBombs = 1
 		self.net = network(self.gamma)
 		self.isTest = isTest
 		self.nonRedundantActions = None
@@ -137,6 +137,7 @@ class DeepQAgent:
 	def setState(self, state):
 		# self.state = state
 		self.eps -= self.annealRate
+		# print self.eps
 		self.nonRedundantActions = self.getNonRedundantActions(state)
 		self.state = self.extract_features(state)
 
@@ -147,6 +148,7 @@ class DeepQAgent:
 		# self.net.findQ(self.state)
 		epsRand = random.random()
 		if(epsRand <= self.eps):
+			print "Took Random"
 			# CHANGED TO RANDOM FROM NON REDUNDANT ACTIONS
 			# a = random.randint(0, 5)
 			a = self.nonRedundantActions[random.randrange(0,len(self.nonRedundantActions))]
@@ -164,7 +166,7 @@ class DeepQAgent:
 		self.nonRedundantActions = self.getNonRedundantActions(newState)
 		newState = self.extract_features(newState)
 		if not self.isTest:
-			self.net.trainNetwork(self.state, self.action, reward, newState)
+			loss = self.net.trainNetwork(self.state, self.action, reward, newState)
 		self.state = newState
 
 
@@ -396,21 +398,21 @@ class DeepQAgent:
 		# features.append(degree_of_freedom)
 		
 		# Bomb details
-		# numBombs = 0
-		# for i in range(len(state.bombs)):
-		# 	bomb = (state.bombs)[i]
-		# 	features.append(bomb.fuse)
-		# 	features.append(bomb.range)
-		# 	# features.append(bomb.position[0]/40)
-		# 	# features.append(bomb.position[1]/40)
-		# 	numBombs += 1
+		numBombs = 0
+		for i in range(len(state.bombs)):
+			bomb = (state.bombs)[i]
+			features.append(bomb.fuse)
+			# features.append(bomb.range)
+			features.append((state.userPosition[0] - bomb.position[0])/40)
+			features.append((state.userPosition[0] - bomb.position[1])/40)
+			numBombs += 1
 		
-		# for i in range(self.maxBombs - numBombs):
-		# 	features.append(0)
-		# 	features.append(0)
+		for i in range(self.maxBombs - numBombs):
+			features.append(0)
+			# features.append(0)
 		
-			# features.append(0)
-			# features.append(0)
+			features.append(0)
+			features.append(0)
 		
 		# User details
 		# features.append(state.userPosition[0]/40)

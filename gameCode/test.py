@@ -46,7 +46,7 @@ class Test:
 		W = board.width
 		board = board.board
 		# positions = [position.position for position in adversary]
-		positions = [(position[0], position[1]) for position in adversary]
+		# positions = [(position[0], position[1]) for position in adversary]
 		# positions_bombs = [position.position for position in bombs]
 		positions_bombs = [(position[0], position[1]) for position in bombs]
 		# positions_enemies = [position.position for position in enemies]
@@ -201,12 +201,12 @@ class Test:
 
 
 if __name__ == "__main__":
-	userPosition = pygame.Rect((40,40),(40,40))
+	userPosition = pygame.Rect((200,120),(40,40))
 	bombs = []
 	enemies = []
-	bombs.append(pygame.Rect((200,320),(40,40)))
-	board = board.Board(1, 1, 0)
+	# bombs.append(pygame.Rect((200,320),(40,40)))
+	board = board.Board(3, 3, 0)
 	t = Test()
 	configure = config.Config()
-	# print t.shortest_distance(userPosition, configure.BRICK, board, bombs, enemies)
-	print t.degree(userPosition, board, bombs, enemies, "right", 2)
+	print t.shortest_distance(userPosition, configure.BRICK, board, bombs, enemies)
+	# print t.degree(userPosition, board, bombs, enemies, "right", 2)

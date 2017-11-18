@@ -34,12 +34,13 @@ class Game:
 		self.isSave = isSave
 		self.eps = eps
 		annealRate = self.eps/self.epochs
+		print annealRate
 		self.agent = agent.Agent(playerAlgo, isLoad, eps, annealRate, isTest)
 		self.isGraphics = isGraphics
 
 		self.c = config.Config()
 
-		self.highscores = highscore.Highscore()
+		# self.highscores = highscore.Highscore()
 		self.forceQuit = False
 		self.mode = mode
 		self.initVar()
@@ -59,6 +60,9 @@ class Game:
 		for i in range(self.epochs):
 			# repeat for multiple levels
 			print "Running Epoch " + str(i)
+			self.stage = 4
+			# self.level = random.randint(1,4)
+			self.level = 4
 			self.resetGame()
 			if self.isGraphics:
 				self.clearBackground()
@@ -537,7 +541,7 @@ class Game:
 		for player in self.players:
 			if player.position == position:
 				self.userEvent = "death"
-				# self.user.setScore(-500)
+				self.user.setScore(-1.0)
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:
@@ -558,7 +562,7 @@ class Game:
 				# RFCT - code repetition
 				if self.user.loseLifeAndGameOver():
 					self.gameover(self.user)
-				# self.user.setScore(-500)
+				self.user.setScore(-1.0)
 				self.resetPlayerPosition(self.user,True)
 	
 	def checkWinConditions(self):
@@ -569,7 +573,7 @@ class Game:
 	def gameover(self, player):
 		if self.mode == self.c.SINGLE:
 			# print 'gameover - lost all lives | or time ran out'
-			self.highscores.addScore(player.score)
+			# self.highscores.addScore(player.score)
 			self.gameIsActive = False
 			
 			# DONT EXIT GAME
@@ -630,7 +634,7 @@ class Game:
 		board = self.field.board
 
 		reward = 0
-		brick_reward = 1
+		brick_reward = 0.5
 
 		for i in range(bomb_range):
 			i += 1

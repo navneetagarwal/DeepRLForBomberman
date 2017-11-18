@@ -8,7 +8,7 @@ class Config(object):
 	LIFE_UP = 5
 	TIME_UP = 6
 	ENEMY_MOVE_PROB = 0.2
-	FPS = 30
+	FPS = 10
 	WIDTH = 840
 	HEIGHT = 690
 	TILE_SIZE = 40
