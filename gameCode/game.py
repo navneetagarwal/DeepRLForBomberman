@@ -60,16 +60,20 @@ class Game:
 		for i in range(self.epochs):
 			# repeat for multiple levels
 			print "Running Epoch " + str(i)
-			self.stage = 4
-			# self.level = random.randint(1,4)
-			self.level = 4
+			self.stage = 5
+			self.level = random.randint(1,4)
+			# self.level = 4
 			self.resetGame()
 			if self.isGraphics:
 				self.clearBackground()
 			self.initGame()
 			print "Player Score - " + str(self.user.score)
 			self.initVar()
-		
+
+			# Save after every 10000 epochs
+			if((i+1)%10000 == 0):
+				if isSave:
+					self.agent.saveModel()
 		if isSave:
 			self.agent.saveModel()
 
@@ -255,10 +259,10 @@ class Game:
 		# generates 5 enemies
 		for i in range(0,1):
 			while True:
-				x = random.randint(4,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
+				x = random.randint(3,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
 				# TODO
-				# y = random.randint(1,self.field.height-2)*40
-				y = 40
+				y = random.randint(4,self.field.height-2)*40
+				# y = 40
 				# print x,y
 				if self.field.getTile((x,y)).canPass() == True:
 					break
@@ -553,7 +557,7 @@ class Game:
 			if enemy.position == position:
 				# Add reward here 
 				self.enemies.remove(enemy)
-				self.user.setScore(100)
+				self.user.setScore(1.0)
 
 	def checkPlayerEnemyCollision(self):
 		for enemy in self.enemies:
@@ -595,7 +599,7 @@ class Game:
 	
 	def victory(self):
 		self.gameIsActive = False
-		self.user.setScore(500)
+		self.user.setScore(4.0)
 		self.level += 1
 		if self.level > 6:
 			self.stage += 1

@@ -120,15 +120,20 @@ class DeepQAgent:
 		playerY = state.userPosition[1]/self.config.TILE_SIZE
 		board = state.board.board
 		acts = [5]
+
+		enemyPos = []
+		for enemy in state.enemies:
+			enemyPos.append((enemy.position[0]/self.config.TILE_SIZE,enemy.position[1]/self.config.TILE_SIZE))
+
 		if((state.user.currentBomb > 0) and (board[playerY][playerX].bomb is None)):
 			acts.append(4)
-		if(board[playerY - 1][playerX].canPass()):
+		if(board[playerY - 1][playerX].canPass() and (playerX,playerY-1) not in enemyPos):
 			acts.append(0)
-		if(board[playerY + 1][playerX].canPass()):
+		if(board[playerY + 1][playerX].canPass() and (playerX,playerY+1) not in enemyPos):
 			acts.append(1)
-		if(board[playerY][playerX-1].canPass()):
+		if(board[playerY][playerX-1].canPass() and (playerX-1,playerY) not in enemyPos):
 			acts.append(2)
-		if(board[playerY][playerX+1].canPass()):
+		if(board[playerY][playerX+1].canPass() and (playerX+1,playerY) not in enemyPos):
 			acts.append(3)
 		# print state.userPosition
 		# print acts
@@ -148,12 +153,13 @@ class DeepQAgent:
 		# self.net.findQ(self.state)
 		epsRand = random.random()
 		if(epsRand <= self.eps):
-			print "Took Random"
+			# print "Took Random"
 			# CHANGED TO RANDOM FROM NON REDUNDANT ACTIONS
 			# a = random.randint(0, 5)
 			a = self.nonRedundantActions[random.randrange(0,len(self.nonRedundantActions))]
 		else:
 			Q = self.net.findQ(self.state)
+			# print self.state, Q
 			bestInd = np.argmax(Q[0,self.nonRedundantActions])
 			a = self.nonRedundantActions[bestInd]
 		# print a
@@ -374,10 +380,11 @@ class DeepQAgent:
 		# features.extend(direction_from_power_up)
 		
 		# Get distance to nearest enemy
-		# distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
-		# features.append(distance_from_enemy)
-		# features.extend(direction_from_enemy)
+		distance_from_enemy, direction_from_enemy = self.shortest_distance_adversary(state.userPosition, state.board, state.enemies, state.bombs, state.enemies)
+		features.append(distance_from_enemy)
+		features.extend(direction_from_enemy)
 		
+
 		# Get distance to nearest bomb
 		# distance_from_bomb, direction_from_bomb = self.shortest_distance_adversary(state.userPosition, state.board, state.bombs, state.bombs, state.enemies)
 		# features.append(distance_from_bomb)

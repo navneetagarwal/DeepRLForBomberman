@@ -7,7 +7,7 @@ class Config(object):
 	POWER_UP = 4
 	LIFE_UP = 5
 	TIME_UP = 6
-	ENEMY_MOVE_PROB = 0.2
+	ENEMY_MOVE_PROB = 0.4
 	FPS = 10
 	WIDTH = 840
 	HEIGHT = 690
