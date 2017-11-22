@@ -557,7 +557,7 @@ class Game:
 			if enemy.position == position:
 				# Add reward here 
 				self.enemies.remove(enemy)
-				self.user.setScore(1.0)
+				self.user.setScore(0.5)
 
 	def checkPlayerEnemyCollision(self):
 		for enemy in self.enemies:
@@ -599,7 +599,7 @@ class Game:
 	
 	def victory(self):
 		self.gameIsActive = False
-		self.user.setScore(4.0)
+		self.user.setScore(0.5)
 		self.level += 1
 		if self.level > 6:
 			self.stage += 1
@@ -638,7 +638,7 @@ class Game:
 		board = self.field.board
 
 		reward = 0
-		brick_reward = 0.5
+		brick_reward = 0.25
 
 		for i in range(bomb_range):
 			i += 1

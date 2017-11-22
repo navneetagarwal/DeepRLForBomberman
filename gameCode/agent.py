@@ -164,6 +164,7 @@ class DeepQAgent:
 			a = self.nonRedundantActions[bestInd]
 		# print a
 		self.action = a
+		# print a
 		return 'up down left right bomb stay'.split()[a]
 
 	def observe(self, newState, reward, event):
@@ -172,7 +173,7 @@ class DeepQAgent:
 		self.nonRedundantActions = self.getNonRedundantActions(newState)
 		newState = self.extract_features(newState)
 		if not self.isTest:
-			loss = self.net.trainNetwork(self.state, self.action, reward, newState)
+			loss = self.net.trainNetwork(self.state, self.action, reward, newState, self.nonRedundantActions, self.eps)
 		self.state = newState
 
 

@@ -59,11 +59,18 @@ class network:
 	def findQ(self, state):
 		return(self.sess.run(self.Q, feed_dict={self.inp: state}))
 
-	def trainNetwork(self, state, action, reward, nextState):
+	def trainNetwork(self, state, action, reward, nextState, nonRedundantActions, eps):
 		Q = self.findQ(state)		
 		nextQ = self.findQ(nextState)
-		bestVal = np.max(nextQ)
-		updatedVal = reward + (self.gamma*bestVal)
+		# bestVal = np.max(nextQ)
+		
+		nextQNonRedundantActions = nextQ[0,nonRedundantActions]
+		probVec = np.ones(len(nonRedundantActions), dtype=np.float)*(eps/len(nonRedundantActions))
+		bestInd = np.argmax(nextQNonRedundantActions)
+		probVec[bestInd] = probVec[bestInd] + (1-eps)
+		expectedVal = np.dot(probVec, nextQNonRedundantActions)
+
+		updatedVal = reward + (self.gamma*expectedVal)
 		
 		# Make the optimal Q vector for training
 		optimalQ = copy.deepcopy(Q)
