@@ -108,12 +108,16 @@ class DeepQAgent:
 		self.eps = eps
 		self.annealRate = annealRate
 		self.maxBombs = 1
-		self.net = network(self.gamma)
+		
+		self.net = []
+		for i in range(6):
+			self.net.append(network(self.gamma))
+			self.net[i]._startSess(isLoad, i)
+
 		self.isTest = isTest
 		self.nonRedundantActions = None
 		# Start tf session
 		self.config = config.Config()
-		self.net._startSess(isLoad)
 
 	def getNonRedundantActions(self, state):
 		playerX = state.userPosition[0]/self.config.TILE_SIZE
@@ -147,7 +151,8 @@ class DeepQAgent:
 		self.state = self.extract_features(state)
 
 	def saveModel(self):
-		self.net.saveNetwork()
+		for i in range(6) :
+			self.net[i].saveNetwork(i)
 
 	def getAction(self):
 		# self.net.findQ(self.state)
@@ -158,7 +163,11 @@ class DeepQAgent:
 			# a = random.randint(0, 5)
 			a = self.nonRedundantActions[random.randrange(0,len(self.nonRedundantActions))]
 		else:
-			Q = self.net.findQ(self.state)
+			Q = np.zeros((1,6), dtype=np.float)
+			
+			for i in range(6):
+				Q[0,i] = self.net[i].findQ(self.state)
+
 			# print self.state, Q
 			bestInd = np.argmax(Q[0,self.nonRedundantActions])
 			a = self.nonRedundantActions[bestInd]
@@ -167,15 +176,27 @@ class DeepQAgent:
 		# print a
 		return 'up down left right bomb stay'.split()[a]
 
-	def observe(self, newState, reward, event):
+	def trainNetworks(self, state, action, reward, nextState):
+		Q = self.net[action].findQ(state)
+		nextQ = np.zeros((1,6), dtype=np.float)
+
+		for i in range(6):
+			nextQ[0,i] = self.net[i].findQ(nextState)
+	
+		bestVal = np.max(nextQ[0,self.nonRedundantActions])
+		updatedVal = reward + self.gamma*bestVal	
+
+		loss = self.net[self.action].trainNetwork(self.state, updatedVal)
+
+	def observe(self, nextState, reward, event):
 		# TODO - Remove
 		# For just testing
-		self.nonRedundantActions = self.getNonRedundantActions(newState)
-		newState = self.extract_features(newState)
+		self.nonRedundantActions = self.getNonRedundantActions(nextState)
+		nextState = self.extract_features(nextState)
 		if not self.isTest:
-			loss = self.net.trainNetwork(self.state, self.action, reward, newState, self.nonRedundantActions, self.eps)
-		self.state = newState
-
+			self.trainNetworks(self.state, self.action, reward, nextState)
+			
+		self.state = nextState
 
 	def get_children_start(self, parent, y_length, x_length):
 		x = parent[0]
@@ -319,7 +340,6 @@ class DeepQAgent:
 		explored.append((userPosition[0], userPosition[1]))
 		val = dfs(nPoint, copy.deepcopy(explored), depth-1)
 		return val
-
 
 	def explosiveHelper(self, userPosition, bomb, board, direction):
 		if direction == 'right':

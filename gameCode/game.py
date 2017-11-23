@@ -61,8 +61,8 @@ class Game:
 			# repeat for multiple levels
 			print "Running Epoch " + str(i)
 			self.stage = 6
-			# self.level = random.randint(1,4)
-			self.level = 4
+			self.level = random.randint(1,4)
+			# self.level = 4
 			self.resetGame()
 			if self.isGraphics:
 				self.clearBackground()
@@ -262,7 +262,7 @@ class Game:
 				x = random.randint(3,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
 				# TODO
 				y = random.randint(4,self.field.height-2)*40
-				# x = 1*40
+				# x = 4*40
 				# y = 4*40
 				# y = 40
 				# print x,y
@@ -722,6 +722,7 @@ class Game:
 		# print (numBricks, totalWeight)
 
 		return (numBricks*brick_reward + totalWeight*enemy_reward)
+		# return numBricks*brick_reward
 
 
 		

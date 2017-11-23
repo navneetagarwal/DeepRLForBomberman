@@ -1,7 +1,7 @@
 import config, pygame, character
 
 class Bomb(pygame.sprite.Sprite):
-	fuse = 10
+	fuse = 5
 	
 	def __init__(self,player,isGraphics):
 		self.isGraphics = isGraphics

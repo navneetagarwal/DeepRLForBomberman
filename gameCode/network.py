@@ -47,25 +47,21 @@ class network:
 		trainer = tf.train.GradientDescentOptimizer(learning_rate=self.conf.lr)
 		self.backProp = trainer.minimize(self.loss, global_step=global_step)
 
-	def _startSess(self, loadModel):
+	def _startSess(self, loadModel, action):
 		self.sess = tf.Session()
+		# writer = tf.summary.FileWriter("graph", self.sess.graph)
+
+		self.saver = tf.train.Saver()
 
 		if not loadModel:
 			self.sess.run(tf.global_variables_initializer())
 		else:
-			saver = tf.train.Saver()
-			saver.restore(self.sess, "../models/model.ckpt")
+			self.saver.restore(self.sess, "../models/action" + str(action) + "/model.ckpt")
 
 	def findQ(self, state):
 		return(self.sess.run(self.Q, feed_dict={self.inp: state}))
 
-	def trainNetwork(self, state, action, reward, nextState, nonRedundantActions, eps):
-		Q = self.findQ(state)		
-		nextQ = self.findQ(nextState)
-	
-		bestVal = np.max(nextQ[0,nonRedundantActions])
-		updatedVal = reward + self.gamma*bestVal	
-
+	def trainNetwork(self, state, updatedVal):
 		# nextQNonRedundantActions = nextQ[0,nonRedundantActions]
 		# probVec = np.ones(len(nonRedundantActions), dtype=np.float)*(eps/len(nonRedundantActions))
 		# bestInd = np.argmax(nextQNonRedundantActions)
@@ -75,14 +71,14 @@ class network:
 		# updatedVal = reward + (self.gamma*expectedVal)
 		
 		# Make the optimal Q vector for training
-		optimalQ = copy.deepcopy(Q)
-		optimalQ[0,action] = updatedVal
+		updatedQ = np.zeros((1,1), dtype=np.float)
+		updatedQ[0,0] = updatedVal
+		loss,_ = self.sess.run([self.loss, self.backProp], feed_dict={self.inp: state, self.optimalQ: updatedQ})
 
 		# if (reward==50):
 		# print updatedVal, action, state
 		# print Q
 
-		loss,_ = self.sess.run([self.loss, self.backProp], feed_dict={self.inp: state, self.optimalQ: optimalQ})
 
 		# if (reward==50):
 		# print loss
@@ -102,14 +98,17 @@ class network:
 
 		return loss
 
-	def saveNetwork(self):
+	def saveNetwork(self, action):
 		try:
-			os.stat('../models')
+			os.stat('../models/action' + str(action))
 		except:
-			os.mkdir('../models', 0775)
-		saver = tf.train.Saver()
-		save_path = saver.save(self.sess, "../models/model.ckpt")
+			os.mkdir('../models/action' + str(action), 0775)
+		# saver = tf.train.Saver()
+		path = "../models/action" + str(action) + "/model.ckpt"
+		# print path
+		save_path = self.saver.save(self.sess, path)
   		print("Model saved in file: %s" % save_path)
+
 
 
 
