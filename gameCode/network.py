@@ -62,15 +62,17 @@ class network:
 	def trainNetwork(self, state, action, reward, nextState, nonRedundantActions, eps):
 		Q = self.findQ(state)		
 		nextQ = self.findQ(nextState)
-		# bestVal = np.max(nextQ)
-		
-		nextQNonRedundantActions = nextQ[0,nonRedundantActions]
-		probVec = np.ones(len(nonRedundantActions), dtype=np.float)*(eps/len(nonRedundantActions))
-		bestInd = np.argmax(nextQNonRedundantActions)
-		probVec[bestInd] = probVec[bestInd] + (1-eps)
-		expectedVal = np.dot(probVec, nextQNonRedundantActions)
+	
+		bestVal = np.max(nextQ[0,nonRedundantActions])
+		updatedVal = reward + self.gamma*bestVal	
 
-		updatedVal = reward + (self.gamma*expectedVal)
+		# nextQNonRedundantActions = nextQ[0,nonRedundantActions]
+		# probVec = np.ones(len(nonRedundantActions), dtype=np.float)*(eps/len(nonRedundantActions))
+		# bestInd = np.argmax(nextQNonRedundantActions)
+		# probVec[bestInd] = probVec[bestInd] + (1-eps)
+		# expectedVal = np.dot(probVec, nextQNonRedundantActions)
+
+		# updatedVal = reward + (self.gamma*expectedVal)
 		
 		# Make the optimal Q vector for training
 		optimalQ = copy.deepcopy(Q)

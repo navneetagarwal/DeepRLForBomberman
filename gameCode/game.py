@@ -60,9 +60,9 @@ class Game:
 		for i in range(self.epochs):
 			# repeat for multiple levels
 			print "Running Epoch " + str(i)
-			self.stage = 5
-			self.level = random.randint(1,4)
-			# self.level = 4
+			self.stage = 6
+			# self.level = random.randint(1,4)
+			self.level = 4
 			self.resetGame()
 			if self.isGraphics:
 				self.clearBackground()
@@ -262,6 +262,8 @@ class Game:
 				x = random.randint(3,self.field.width-2)*40			# randint(1,X) changed to 6 so enemies do not start near player
 				# TODO
 				y = random.randint(4,self.field.height-2)*40
+				# x = 1*40
+				# y = 4*40
 				# y = 40
 				# print x,y
 				if self.field.getTile((x,y)).canPass() == True:
@@ -545,7 +547,7 @@ class Game:
 		for player in self.players:
 			if player.position == position:
 				self.userEvent = "death"
-				self.user.setScore(-1.0)
+				self.user.setScore(-2.0)
 				if player.loseLifeAndGameOver():
 					self.gameover(player)
 				else:
@@ -557,7 +559,7 @@ class Game:
 			if enemy.position == position:
 				# Add reward here 
 				self.enemies.remove(enemy)
-				self.user.setScore(0.5)
+				self.user.setScore(2.0)
 
 	def checkPlayerEnemyCollision(self):
 		for enemy in self.enemies:
@@ -566,7 +568,7 @@ class Game:
 				# RFCT - code repetition
 				if self.user.loseLifeAndGameOver():
 					self.gameover(self.user)
-				self.user.setScore(-1.0)
+				self.user.setScore(-2.0)
 				self.resetPlayerPosition(self.user,True)
 	
 	def checkWinConditions(self):
@@ -628,8 +630,8 @@ class Game:
 		if self.isGraphics:
 			self.printText(txt,(400,653))
 
-	def expectedBombReward(self, bomb):
 
+	def expectedBombNumBricks(self, bomb):
 		x = self.user.position[0]/self.c.TILE_SIZE
 		y = self.user.position[1]/self.c.TILE_SIZE
 		bomb_range = bomb.range
@@ -637,40 +639,90 @@ class Game:
 		wall = self.c.WALL
 		board = self.field.board
 
-		reward = 0
+		numBricks = 0
+
+		for i in range(bomb_range):
+			if (board[y+i+1][x].type == brick):
+				numBricks += 1
+				break
+			elif (board[y+i+1][x].type == wall):
+				break
+
+		for i in range(bomb_range):
+			if (board[y-i-1][x].type == brick):
+				numBricks += 1
+				break
+			elif (board[y-i-1][x].type == wall):
+				break
+
+		for i in range(bomb_range):
+			if (board[y][x+i+1].type == brick):
+				numBricks += 1
+				break
+			elif (board[y][x+i+1].type == wall):
+				break
+
+		for i in range(bomb_range):
+			if (board[y][x-i-1].type == brick):
+				numBricks += 1
+				break
+			elif (board[y][x-i-1].type == wall):
+				break
+
+		return numBricks
+
+	def probEnemyDie(self, x, y, bomb_range, bomb_fuse, ex, ey):
+		# Termination cases
+		# print (ex,ey,bomb_fuse)
+		if(bomb_fuse == 1):
+			for i in range(bomb_range):
+				if((x == ex and y+i+1 == ey) or (x == ex and y-i-1 == ey) or (x+i+1 == ex and y == ey) or (x-i-1 == ex and y == ey)):
+					return 1
+			return 0
+
+		# Call next round
+		prob = 0
+		bomb_fuse -= 1
+		probStay = self.probEnemyDie(x, y, bomb_range, bomb_fuse, ex, ey)
+
+		probMove = 0
+		if(self.field.board[ey][ex+1].canPass()):
+			probMove += 0.25*self.probEnemyDie(x, y, bomb_range, bomb_fuse, ex+1, ey)
+		if(self.field.board[ey][ex-1].canPass()):
+			probMove += 0.25*self.probEnemyDie(x, y, bomb_range, bomb_fuse, ex-1, ey)
+		if(self.field.board[ey+1][ex].canPass()):
+			probMove += 0.25*self.probEnemyDie(x, y, bomb_range, bomb_fuse, ex, ey+1)
+		if(self.field.board[ey-1][ex].canPass()):
+			probMove += 0.25*self.probEnemyDie(x, y, bomb_range, bomb_fuse, ex, ey-1)
+
+		return ((self.c.ENEMY_MOVE_PROB*probMove) + ((1-self.c.ENEMY_MOVE_PROB)*probStay))
+
+	def expectedEnemyBombProb(self, bomb):
+		x = self.user.position[0]/self.c.TILE_SIZE
+		y = self.user.position[1]/self.c.TILE_SIZE
+		bomb_range = bomb.range
+		bomb_fuse = bomb.fuse
+
+		totalWeight = 0 
+		for e in self.enemies:
+			totalWeight += self.probEnemyDie(x, y, bomb_range, bomb_fuse, e.position[0]/self.c.TILE_SIZE, e.position[1]/self.c.TILE_SIZE)
+
+		return totalWeight
+
+	def expectedBombReward(self, bomb):
 		brick_reward = 0.25
+		enemy_reward = 1.0
+		
+		numBricks = self.expectedBombNumBricks(bomb)
+		totalWeight = self.expectedEnemyBombProb(bomb)
 
-		for i in range(bomb_range):
-			i += 1
-			if (board[y+i][x].type == brick):
-				reward += brick_reward
-				break
-			elif (board[y+i][x].type == wall):
-				break
+		# print (self.user.position[0]/self.c.TILE_SIZE, self.user.position[1]/self.c.TILE_SIZE)
+		# self.field.printBoard()
+		# print (self.enemies[0].position[0]/self.c.TILE_SIZE, self.enemies[0].position[1]/self.c.TILE_SIZE)
+		# print (numBricks, totalWeight)
 
-		for i in range(bomb_range):
-			i += 1
-			if (board[y-i][x].type == brick):
-				reward += brick_reward
-				break
-			elif (board[y-i][x].type == wall):
-				break
+		return (numBricks*brick_reward + totalWeight*enemy_reward)
 
-		for i in range(bomb_range):
-			i += 1
-			if (board[y][x+i].type == brick):
-				reward += brick_reward
-				break
-			elif (board[y][x+i].type == wall):
-				break
 
-		for i in range(bomb_range):
-			i += 1
-			if (board[y][x-i].type == brick):
-				reward += brick_reward
-				break
-			elif (board[y][x-i].type == wall):
-				break
-
-		return reward
+		
 		
